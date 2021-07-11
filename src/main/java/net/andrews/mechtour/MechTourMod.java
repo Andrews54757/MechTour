@@ -13,6 +13,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.transformer.Config;
 
 import net.andrews.mechtour.mapgui.MapGuiHolder;
 import net.andrews.mechtour.mapgui.gui.GuideMenuGUI;
@@ -715,7 +716,7 @@ public class MechTourMod {
 
         ServerPlayerEntity player = serverPlayNetworkHandler.player;
         ItemStack stack = player.inventory.getStack(selectedSlot);
-        if (isGuideItem(stack)) {
+        if (isGuideItem(stack) && !Configs.configs.disableGuideItem) {
             if (Configs.configs.vanillaMode) {
                 sendActionBarMessage(player, "Use to teleport to tour");
             } else {
@@ -759,7 +760,7 @@ public class MechTourMod {
             return;
         }
 
-        if (MechTourMod.isHoldingGuide(player)) {
+        if (MechTourMod.isHoldingGuide(player) && !Configs.configs.disableGuideItem) {
 
             if (Configs.configs.vanillaMode) {
                 teleportToGuide(player);
