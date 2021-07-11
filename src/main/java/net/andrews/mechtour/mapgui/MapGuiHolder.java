@@ -31,8 +31,8 @@ public class MapGuiHolder {
     private int panelSize;
     private BlockPos panelCorner1;
     private BlockPos panelCorner2;
-    private int oldMouseX = 0;
-    private int oldMouseY = 0;
+    private int oldMouseX = -1;
+    private int oldMouseY = -1;
 
     private int clicked = 0;
 
@@ -47,7 +47,7 @@ public class MapGuiHolder {
     }
 
     public boolean isTrackingPanel() {
-        return isPanelOpen() && oldMouseX != 0 && oldMouseY != 0;
+        return isPanelOpen() && oldMouseX != -1 && oldMouseY != -1;
     }
 
     public int getPanelWidth() {
@@ -104,8 +104,8 @@ public class MapGuiHolder {
             }
             BlockHitResult result = Utils.raycastBox(player.world, player, 20, panelBox);
 
-            int newMouseX = 0;
-            int newMouseY = 0;
+            int newMouseX = -1;
+            int newMouseY = -1;
             if (result != null && result.getSide() == panelFacingSide) {
 
                 double dx = panelCorner1.getX() - result.getPos().getX();
@@ -286,6 +286,11 @@ public class MapGuiHolder {
     public void closePanel() {
         if (!isPanelOpen())
             return;
+
+        if (oldMouseX != -1 || oldMouseY != -1)
+        this.onMousePosChange(-1, -1, oldMouseX, oldMouseY);
+        oldMouseX = -1;
+        oldMouseY = -1;
         int i = Math.min(this.panelSize, Integer.MAX_VALUE);
         int[] is = new int[i];
         for (int j = 0; j < i; j++) {
