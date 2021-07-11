@@ -36,12 +36,10 @@ public class WaypointsMenuGui extends MapGuiBase {
     private SimpleTextButton closeButton;
     private ScrollBar scrollBar;
 
-
     private static int rows = 3;
     private static int columns = 4;
     private static int offsetX = 15;
     private static int offsetY = 105;
-    
 
     private static int padding = 3;
     private static int itemsPerPage = rows * columns;
@@ -57,7 +55,7 @@ public class WaypointsMenuGui extends MapGuiBase {
             tab_fillTextColor, tab_hoverTextColor);
 
     public WaypointsMenuGui() {
-        pageHolder = new int[] {0,0,0};
+        pageHolder = new int[] { 0, 0, 0 };
         backButton = new SimpleTextButton(Resources.back_text, nav_fillColor, nav_hoverColor, nav_fillTextColor,
                 nav_hoverTextColor);
         backButton.setClickCallback((boolean isInteract, MapGuiHolder holder) -> {
@@ -99,11 +97,12 @@ public class WaypointsMenuGui extends MapGuiBase {
 
     @Override
     public void render(MapGuiHolder holder) {
-        if (currentDimensionTab == null)  setDimensionTab(DimensionTab.getDimensionTab(holder.getPlayer().getServerWorld()));
+        if (currentDimensionTab == null)
+            setDimensionTab(DimensionTab.getDimensionTab(holder.getPlayer().getServerWorld()));
         MapRenderer.fill(holder, (byte) 0);
         // banner = new BitMapImage("banner.png").scaledDimensions(-1,
         // 100).setAlphaCutoff(200).bake();
-      
+
         int rect_width = holder.getPanelPixelWidth() - 20;
 
         MapRenderer.fill(holder, 10, 100, holder.getPanelPixelWidth() - 20, holder.getPanelPixelHeight() - 100,
@@ -117,41 +116,31 @@ public class WaypointsMenuGui extends MapGuiBase {
         backButton.setDimensions(10, 10, 100, 50);
         closeButton.setDimensions(holder.getPanelPixelWidth() - 100 - 10, 10, 100, 50);
 
-
-     
         WaypointManager manager = MechTourMod.waypointManager;
         ArrayList<Waypoint> waypoints = manager.getWaypoints(currentDimensionTab.getKey().getValue().getPath());
-        
 
         int page = scrollBar.getDisplayPage();
 
-        
-        
-        pages = (int)Math.ceil((double)waypoints.size() / (double)itemsPerPage);
-        scrollBar.setDimensions( holder.getPanelPixelWidth() - 30 - 10, 100, 30, holder.getPanelPixelHeight() - 100);
+        pages = (int) Math.ceil((double) waypoints.size() / (double) itemsPerPage);
+        scrollBar.setDimensions(holder.getPanelPixelWidth() - 30 - 10, 100, 30, holder.getPanelPixelHeight() - 100);
         scrollBar.setTotalPages(pages);
-
-
 
         int width = holder.getPanelPixelWidth() - 30 - (pages <= 1 ? 0 : 30);
         int height = holder.getPanelPixelHeight() - 110;
 
-      
-
         int boxWidth = width / columns;
         int boxHeight = height / rows;
 
+        int bw = width / columns - padding * 2;
+        int bh = height / rows - padding * 2;
 
-
-        int bw = width / columns - padding*2;
-        int bh = height / rows - padding*2;
-        
         int startIndex = page * itemsPerPage;
 
         MapText titleText = Resources.waypoints_title;
         for (int i = 0; i < itemsPerPage; i++) {
 
-            if (i + startIndex >= waypoints.size()) break;
+            if (i + startIndex >= waypoints.size())
+                break;
             Waypoint waypoint = waypoints.get(i + startIndex);
             MapText name = waypoint.getTextIcon();
             WaypointIcons.Icon icon = waypoint.getIcon();
@@ -161,24 +150,22 @@ public class WaypointsMenuGui extends MapGuiBase {
 
             int x = column * boxWidth + offsetX + padding;
             int y = row * boxHeight + offsetY + padding;
-            MapRenderer.fill(holder, x, y, boxWidth - padding*2, boxHeight - padding*2, currentBox == i ? (byte)40 : (byte)41);
+            MapRenderer.fill(holder, x, y, boxWidth - padding * 2, boxHeight - padding * 2,
+                    currentBox == i ? (byte) 40 : (byte) 41);
 
             if (icon != null)
                 MapRenderer.drawImage(holder, icon.getImage(), x + bw / 2 - icon.getImage().getWidth() / 2, y + 3);
-            
-             
-            MapRenderer.drawText(holder, name, x + bw / 2 - name.getWidth() / 2, y + bh - name.getHeight() - 5, (byte)206);
+
+            MapRenderer.drawText(holder, name, x + bw / 2 - name.getWidth() / 2, y + bh - name.getHeight() - 5,
+                    (byte) 206);
 
             if (currentBox == i) {
                 titleText = waypoint.getPosText();
             }
         }
 
-        MapRenderer.drawText(holder, titleText,
-        holder.getPanelPixelWidth() / 2 - titleText.getWidth() / 2, 5, (byte) 116);
-
-
-
+        MapRenderer.drawText(holder, titleText, holder.getPanelPixelWidth() / 2 - titleText.getWidth() / 2, 5,
+                (byte) 116);
 
         super.render(holder);
     }
@@ -186,8 +173,8 @@ public class WaypointsMenuGui extends MapGuiBase {
     private void setDimensionTab(DimensionTab tab) {
 
         if (currentDimensionTab != null) {
-        int page = scrollBar.getCurrentPage();
-        pageHolder[currentDimensionTab.getIndex()] = page;
+            int page = scrollBar.getCurrentPage();
+            pageHolder[currentDimensionTab.getIndex()] = page;
         }
         this.currentDimensionTab = tab;
         scrollBar.setCurrentPage(pageHolder[currentDimensionTab.getIndex()]);
@@ -199,7 +186,8 @@ public class WaypointsMenuGui extends MapGuiBase {
         int width = holder.getPanelPixelWidth() - 30 - (pages <= 1 ? 0 : 30);
         int height = holder.getPanelPixelHeight() - 110;
 
-        if (x < offsetX + padding || y < offsetY + padding || y >= holder.getPanelPixelHeight() - padding || x >= holder.getPanelPixelWidth() - padding) {
+        if (x < offsetX + padding || y < offsetY + padding || y >= holder.getPanelPixelHeight() - padding
+                || x >= holder.getPanelPixelWidth() - padding) {
             return -1;
         }
 
@@ -207,7 +195,6 @@ public class WaypointsMenuGui extends MapGuiBase {
         int dy = y - offsetY;
         int boxWidth = width / columns;
         int boxHeight = height / rows;
-     
 
         int mx = dx / boxWidth;
         int my = dy / boxHeight;
@@ -218,17 +205,17 @@ public class WaypointsMenuGui extends MapGuiBase {
 
         int bx = mx * boxWidth + padding;
         int by = my * boxHeight + padding;
-        int bw = width / columns - padding*2;
-        int bh = height / rows - padding*2;
+        int bw = width / columns - padding * 2;
+        int bh = height / rows - padding * 2;
 
         int bmx = bx + bw;
         int bmy = by + bh;
 
         if (dx < bx || dy < by || dx >= bmx || dy >= bmy) {
-         return -1;
+            return -1;
         }
 
-         return mx + my * columns;
+        return mx + my * columns;
     }
 
     @Override
@@ -246,20 +233,30 @@ public class WaypointsMenuGui extends MapGuiBase {
     @Override
     public void onClick(boolean isInteractKey, MapGuiHolder holder) {
         // TODO Auto-generated method stub
+        Waypoint waypoint = getWaypoint();
+        if (waypoint != null) {
+
+            MechTourMod.teleportToWaypoint(holder.getPlayer(), waypoint, true);
+
+        }
+        super.onClick(isInteractKey, holder);
+    }
+
+    public Waypoint getWaypoint() {
         if (currentBox != -1) {
+
             WaypointManager manager = MechTourMod.waypointManager;
             ArrayList<Waypoint> waypoints = manager.getWaypoints(currentDimensionTab.getKey().getValue().getPath());
-            
-    
+
             int startIndex = scrollBar.getDisplayPage() * itemsPerPage;
             int index = currentBox + startIndex;
 
             if (index >= 0 && index < waypoints.size()) {
                 Waypoint waypoint = waypoints.get(index);
-                MechTourMod.teleportToWaypoint(holder.getPlayer(), waypoint, true);
+                return waypoint;
             }
         }
-        super.onClick(isInteractKey, holder);
+        return null;
     }
 
     public enum DimensionTab {

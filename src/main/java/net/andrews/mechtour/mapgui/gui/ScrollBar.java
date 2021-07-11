@@ -65,21 +65,21 @@ public class ScrollBar extends InteractableElement {
         }
        
         MapRenderer.fill(holder, x, y, width, height, (byte) 12);
-        scrollUpButton.setDimensions(x, y, width, 20);
-        scrollDownButton.setDimensions(x, y + height - 20, width, 20);
+        scrollUpButton.setDimensions(x, y, width, 30);
+        scrollDownButton.setDimensions(x, y + height - 30, width, 30);
 
 
         scrollUpButton.setTextHidden(currentPage <= 0);
         scrollDownButton.setTextHidden(currentPage + 1 >= totalPages);
 
-        int h = height - 40;
+        int h = height - 60;
         double barheight = (double)h / (double)totalPages;
         if (hoverPage != -1 && hoverPage != currentPage) {
-            MapRenderer.fill(holder, x, y + (int)(hoverPage * barheight) + 20, width, (int) barheight, (byte)88);
+            MapRenderer.fill(holder, x, y + (int)(hoverPage * barheight) + 30, width, (int) barheight, (byte)88);
         }
 
         if (currentPage != -1) {
-            MapRenderer.fill(holder, x, y + (int)(currentPage * barheight) + 20, width, (int) barheight, (byte)85);
+            MapRenderer.fill(holder, x, y + (int)(currentPage * barheight) + 30, width, (int) barheight, (byte)85);
         }
 
         super.render(holder);
@@ -88,14 +88,14 @@ public class ScrollBar extends InteractableElement {
 
     public int getPageFromPos(int y) {
 
-        int h = height - 40;
+        int h = height - 60;
         int my = y - this.y;
 
-        if (my <= 20 || my >= height - 20) {
+        if (my <= 30 || my >= height - 30) {
             return -1;
         }
 
-        return (int)(((double)(my - 20) / (double)h) * (double)totalPages);
+        return (int)(((double)(my - 30) / (double)h) * (double)totalPages);
 
     }
 

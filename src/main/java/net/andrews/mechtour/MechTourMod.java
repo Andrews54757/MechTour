@@ -18,6 +18,7 @@ import org.spongepowered.asm.mixin.transformer.Config;
 import net.andrews.mechtour.mapgui.MapGuiHolder;
 import net.andrews.mechtour.mapgui.gui.GuideMenuGUI;
 import net.andrews.mechtour.mapgui.gui.Resources;
+import net.andrews.mechtour.mapgui.gui.WaypointsMenuGui;
 import net.andrews.mechtour.waypoint.Waypoint;
 import net.andrews.mechtour.waypoint.WaypointIcons;
 import net.andrews.mechtour.waypoint.WaypointManager;
@@ -157,47 +158,17 @@ public class MechTourMod {
                                                         .executes(MechTourMod::removeWaypoint))))
                                 .then(CommandManager.literal("modifyIcon").requires((serverCommandSource) -> {
                                     return serverCommandSource.hasPermissionLevel(2);
-                                }).then(CommandManager
-                                        .argument("dimension", DimensionArgumentType.dimension()).then(
-                                                CommandManager
-                                                        .argument("name",
-                                                                StringArgumentType.string())
-                                                        .suggests(
-                                                                (c, b) -> CommandSource
-                                                                        .suggestMatching(
-                                                                                waypointManager.getWaypointNames(
-                                                                                        DimensionArgumentType
-                                                                                                .getDimensionArgument(c,
-                                                                                                        "dimension")
-                                                                                                .getRegistryKey()
-                                                                                                .getValue().getPath()),
-                                                                                b))
-                                                        .then(CommandManager.argument("icon", StringArgumentType.word())
+                                }).then(CommandManager.argument("icon", StringArgumentType.word())
                                                                 .suggests((c, b) -> CommandSource.suggestMatching(
                                                                         WaypointIcons.getIconNames(), b))
-                                                                .executes(MechTourMod::modifyIcon)))))
+                                                                .executes(MechTourMod::modifyIcon)))
                                 .then(CommandManager.literal("modifyName").requires((serverCommandSource) -> {
                                     return serverCommandSource.hasPermissionLevel(2);
                                 }).then(CommandManager
-                                        .argument("dimension", DimensionArgumentType.dimension()).then(
-                                                CommandManager
-                                                        .argument("name",
-                                                                StringArgumentType.string())
-                                                        .suggests(
-                                                                (c, b) -> CommandSource
-                                                                        .suggestMatching(
-                                                                                waypointManager.getWaypointNames(
-                                                                                        DimensionArgumentType
-                                                                                                .getDimensionArgument(c,
-                                                                                                        "dimension")
-                                                                                                .getRegistryKey()
-                                                                                                .getValue().getPath()),
-                                                                                b))
-                                                        .then(CommandManager
                                                                 .argument("newname", StringArgumentType.greedyString())
                                                                 .suggests((c, b) -> CommandSource.suggestMatching(
                                                                         WaypointIcons.getIconNames(), b))
-                                                                .executes(MechTourMod::modifyName)))))
+                                                                .executes(MechTourMod::modifyName)))
                                 .then(CommandManager.literal("reload").requires((serverCommandSource) -> {
                                     return serverCommandSource.hasPermissionLevel(2);
                                 }).then(CommandManager.literal("icons").executes(MechTourMod::reloadIconsCommand)).executes(MechTourMod::reloadCommand)));
@@ -467,26 +438,24 @@ public class MechTourMod {
                 return 1;
             }
 
-            String dimension;
-
-            try {
-                dimension = DimensionArgumentType.getDimensionArgument(ctx, "dimension").getRegistryKey().getValue()
-                        .getPath();
-
-            } catch (Exception e) {
-                dimension = ctx.getSource().getWorld().getRegistryKey().getValue().getPath();
+            MapGuiHolder holder = guiHolders.get(ctx.getSource().getPlayer());
+        
+            if (holder == null || !holder.isPanelOpen() || holder.getGui() == null || !(holder.getGui() instanceof WaypointsMenuGui)){
+                sendFeedback(ctx, "Waypoint gui is not open!", true);
             }
 
-            String name = StringArgumentType.getString(ctx, "name");
-            Waypoint waypoint = waypointManager.getWaypoint(dimension, name);
+            WaypointsMenuGui gui = (WaypointsMenuGui)holder.getGui();
+
+            Waypoint waypoint = gui.getWaypoint();
+
             if (waypoint == null) {
-                sendFeedback(ctx, "No waypoint " + name + " in dimension " + dimension + " exists!", true);
+                sendFeedback(ctx, "You need to point at the waypoint!", true);
                 return 1;
             }
             String icon = StringArgumentType.getString(ctx, "icon");
             waypoint.setIconName(icon);
             waypointManager.waypointsUpdated();
-            sendFeedback(ctx, "Changed icon of waypoint " + name + " in dimension " + dimension + " to " + icon + "!",
+            sendFeedback(ctx, "Changed icon of waypoint " + waypoint.getName() + " in dimension " + waypoint.getDimension() + " to " + icon + "!",
                     true);
         } catch (Exception e) {
             sendFeedback(ctx, "An error has occured: " + e, true);
@@ -507,27 +476,26 @@ public class MechTourMod {
                 return 1;
             }
 
-            String dimension;
-
-            try {
-                dimension = DimensionArgumentType.getDimensionArgument(ctx, "dimension").getRegistryKey().getValue()
-                        .getPath();
-
-            } catch (Exception e) {
-                dimension = ctx.getSource().getWorld().getRegistryKey().getValue().getPath();
+            MapGuiHolder holder = guiHolders.get(ctx.getSource().getPlayer());
+        
+            if (holder == null || !holder.isPanelOpen() || holder.getGui() == null || !(holder.getGui() instanceof WaypointsMenuGui)){
+                sendFeedback(ctx, "Waypoint gui is not open!", true);
             }
 
-            String name = StringArgumentType.getString(ctx, "name");
-            Waypoint waypoint = waypointManager.getWaypoint(dimension, name);
+            WaypointsMenuGui gui = (WaypointsMenuGui)holder.getGui();
+
+            Waypoint waypoint = gui.getWaypoint();
+
             if (waypoint == null) {
-                sendFeedback(ctx, "No waypoint " + name + " in dimension " + dimension + " exists!", true);
+                sendFeedback(ctx, "You need to point at the waypoint!", true);
                 return 1;
             }
+
             String newname = StringArgumentType.getString(ctx, "newname");
             waypoint.setName(newname);
             waypointManager.waypointsUpdated();
             sendFeedback(ctx,
-                    "Changed name of waypoint " + name + " in dimension " + dimension + " to " + newname + "!", true);
+                    "Changed name of waypoint " + waypoint.getName() + " in dimension " + waypoint.getDimension() + " to " + newname + "!", true);
         } catch (Exception e) {
             sendFeedback(ctx, "An error has occured: " + e, true);
         }

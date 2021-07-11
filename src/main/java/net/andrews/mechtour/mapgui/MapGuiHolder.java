@@ -185,6 +185,10 @@ public class MapGuiHolder {
         return maps.get(index).setPixel(x - mapX * MapGuiMap.MAP_WIDTH, y - mapY * MapGuiMap.MAP_HEIGHT, color);
     }
 
+    public MapGuiBase getGui() {
+        return mapGui;
+    }
+
     public boolean isPanelOpen() {
         return panelOpen;
     }

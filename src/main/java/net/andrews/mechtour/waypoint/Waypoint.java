@@ -98,7 +98,7 @@ public class Waypoint {
         this.dimension = dimension;
     }
     public void setIconName(String iconName) {
-        this.icon = icon;
+        this.icon = iconName;
     }
 
 
