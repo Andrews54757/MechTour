@@ -16,6 +16,7 @@ public class Configs {
     public boolean vanillaMode = false;
     public boolean disableGuideItem = false;
     public boolean disableGuideHoldMessage = false;
+    public boolean broadcastTeleportsToOps = true;
 
     public transient static Configs configs;
   

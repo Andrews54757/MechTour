@@ -727,7 +727,7 @@ public class MechTourMod {
     }
 
     public static void sendActionBarMessage(ServerPlayerEntity player, String str) {
-        Utils.sendPacket(player, new TitleS2CPacket(Action.ACTIONBAR, new LiteralText(str), 0, 20 * 3, 15));
+        Utils.sendPacket(player, new TitleS2CPacket(Action.ACTIONBAR, new LiteralText(str), 0, 20 * 3, 10));
     }
 
     public static void openGuideGUI(ServerPlayerEntity player) {
@@ -851,6 +851,7 @@ public class MechTourMod {
     }
 
     private static void sendToOps(MinecraftServer server, String message) {
+        if (!Configs.configs.broadcastTeleportsToOps) return;
         Text text = (new LiteralText(message)).formatted(new Formatting[] { Formatting.GRAY, Formatting.ITALIC });
 
         if (server.getGameRules().getBoolean(GameRules.SEND_COMMAND_FEEDBACK)) {
