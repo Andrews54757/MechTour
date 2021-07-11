@@ -46,7 +46,7 @@ public class WaypointIcons {
         private BitMapImage image;
 
         public void prepareImage() {
-            image = new BitMapImage("waypoint_icons/" + file).scaledDimensions(-1, 80).setAlphaCutoff(200);
+            image = new BitMapImage("waypoint_icons/" + file).scaledDimensions(-1, 80).setAlphaCutoff(20);
             if (!getColored()) {
                 image.setColor(83,134,184);
             }

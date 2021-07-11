@@ -135,4 +135,10 @@ public class WaypointManager {
         return null;
     }
 
+    public void moveWaypoint(Waypoint waypoint, int newpos) {
+        waypoints.remove(waypoint);
+        waypoints.add(newpos, waypoint);
+        waypointsUpdated();
+    }
+
 }

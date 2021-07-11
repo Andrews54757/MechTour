@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 
@@ -164,6 +165,10 @@ public class MechTourMod {
                                     return serverCommandSource.hasPermissionLevel(2);
                                 }).then(CommandManager.argument("newname", StringArgumentType.greedyString())
                                         .executes(MechTourMod::modifyName)))
+                                .then(CommandManager.literal("move").requires((serverCommandSource) -> {
+                                            return serverCommandSource.hasPermissionLevel(2);
+                                        }).then(CommandManager.argument("newindex", IntegerArgumentType.integer())
+                                                .executes(MechTourMod::moveCommand)))
                                 .then(CommandManager.literal("reload").requires((serverCommandSource) -> {
                                     return serverCommandSource.hasPermissionLevel(2);
                                 }).then(CommandManager.literal("icons").executes(MechTourMod::reloadIconsCommand))
@@ -444,6 +449,45 @@ public class MechTourMod {
         return 1;
     }
 
+    private static int moveCommand(CommandContext<ServerCommandSource> ctx) {
+
+        try {
+            if (Configs.configs.disableWaypoints) {
+                sendFeedback(ctx, "Waypoints are disabled!");
+                return 1;
+            }
+            if (Configs.configs.disableWaypointEdits) {
+                sendFeedback(ctx, "Waypoint editing is disabled!");
+                return 1;
+            }
+
+            MapGuiHolder holder = guiHolders.get(ctx.getSource().getPlayer());
+
+            if (holder == null || !holder.isPanelOpen() || holder.getGui() == null
+                    || !(holder.getGui() instanceof WaypointsMenuGui)) {
+                sendFeedback(ctx, "Waypoint gui is not open!", true);
+                return 1;
+            }
+
+            WaypointsMenuGui gui = (WaypointsMenuGui) holder.getGui();
+
+            Waypoint waypoint = gui.getWaypoint();
+
+            if (waypoint == null) {
+                sendFeedback(ctx, "You need to point at the waypoint!", true);
+                return 1;
+            }
+            int newpos = IntegerArgumentType.getInteger(ctx, "newindex");
+            waypointManager.moveWaypoint(waypoint, newpos);
+            waypointManager.waypointsUpdated();
+            sendFeedback(ctx, "Changed index of waypoint " + waypoint.getName() + " in dimension "
+                    + waypoint.getDimension() + " to " + newpos + "!", true);
+        } catch (Exception e) {
+            sendFeedback(ctx, "An error has occured: " + e, true);
+        }
+
+        return 1;
+    }
     private static int modifyIcon(CommandContext<ServerCommandSource> ctx) {
 
         try {
