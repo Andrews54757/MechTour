@@ -4,17 +4,17 @@
   "version": "${version}",
 
   "name": "MechTour",
-  "description": "For tours",
+  "description": "For server tours",
   "authors": [
     "Andrews54757"
   ],
   "contact": {
-    "homepage": "",
-    "sources": ""
+    "homepage": "https://github.com/Andrews54757/MechTour",
+    "sources": "https://github.com/Andrews54757/MechTour"
   },
 
   "license": "AGPL-3.0",
-  "icon": "assets/modid/icon.png",
+  "icon": "assets/mechtour/icon.png",
 
   "environment": "*",
   "entrypoints": {
