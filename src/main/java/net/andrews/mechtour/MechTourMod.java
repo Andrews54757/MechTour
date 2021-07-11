@@ -166,8 +166,6 @@ public class MechTourMod {
                                     return serverCommandSource.hasPermissionLevel(2);
                                 }).then(CommandManager
                                                                 .argument("newname", StringArgumentType.greedyString())
-                                                                .suggests((c, b) -> CommandSource.suggestMatching(
-                                                                        WaypointIcons.getIconNames(), b))
                                                                 .executes(MechTourMod::modifyName)))
                                 .then(CommandManager.literal("reload").requires((serverCommandSource) -> {
                                     return serverCommandSource.hasPermissionLevel(2);
