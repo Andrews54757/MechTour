@@ -13,7 +13,6 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.transformer.Config;
 
 import net.andrews.mechtour.mapgui.MapGuiHolder;
 import net.andrews.mechtour.mapgui.gui.GuideMenuGUI;
@@ -69,8 +68,6 @@ public class MechTourMod {
     public static WaypointManager waypointManager;
 
     public static void init() {
-
-      
 
         // Initialize resources
         // Resources.noop();
@@ -155,21 +152,22 @@ public class MechTourMod {
                                                                                                 .getRegistryKey()
                                                                                                 .getValue().getPath()),
                                                                                 b))
-                                                        .executes(MechTourMod::removeWaypoint))))
+                                                        .executes(MechTourMod::removeWaypoint)))
+                                        .executes(MechTourMod::removeWaypoint2))
                                 .then(CommandManager.literal("modifyIcon").requires((serverCommandSource) -> {
                                     return serverCommandSource.hasPermissionLevel(2);
                                 }).then(CommandManager.argument("icon", StringArgumentType.word())
-                                                                .suggests((c, b) -> CommandSource.suggestMatching(
-                                                                        WaypointIcons.getIconNames(), b))
-                                                                .executes(MechTourMod::modifyIcon)))
+                                        .suggests((c, b) -> CommandSource.suggestMatching(WaypointIcons.getIconNames(),
+                                                b))
+                                        .executes(MechTourMod::modifyIcon)))
                                 .then(CommandManager.literal("modifyName").requires((serverCommandSource) -> {
                                     return serverCommandSource.hasPermissionLevel(2);
-                                }).then(CommandManager
-                                                                .argument("newname", StringArgumentType.greedyString())
-                                                                .executes(MechTourMod::modifyName)))
+                                }).then(CommandManager.argument("newname", StringArgumentType.greedyString())
+                                        .executes(MechTourMod::modifyName)))
                                 .then(CommandManager.literal("reload").requires((serverCommandSource) -> {
                                     return serverCommandSource.hasPermissionLevel(2);
-                                }).then(CommandManager.literal("icons").executes(MechTourMod::reloadIconsCommand)).executes(MechTourMod::reloadCommand)));
+                                }).then(CommandManager.literal("icons").executes(MechTourMod::reloadIconsCommand))
+                                        .executes(MechTourMod::reloadCommand)));
 
         dispatcher.register(CommandManager.literal("tpw").requires((serverCommandSource) -> {
             return serverCommandSource.hasPermissionLevel(2);
@@ -293,7 +291,6 @@ public class MechTourMod {
         }
         return 1;
     }
-
 
     private static int reloadIconsCommand(CommandContext<ServerCommandSource> ctx) {
 
@@ -424,6 +421,29 @@ public class MechTourMod {
         return 1;
     }
 
+    private static int removeWaypoint2(CommandContext<ServerCommandSource> ctx) {
+        try {
+            MapGuiHolder holder = guiHolders.get(ctx.getSource().getPlayer());
+
+            if (holder == null || !holder.isPanelOpen() || holder.getGui() == null
+                    || !(holder.getGui() instanceof WaypointsMenuGui)) {
+                sendFeedback(ctx, "Waypoint gui is not open!", true);
+                return 1;
+            }
+
+            WaypointsMenuGui gui = (WaypointsMenuGui) holder.getGui();
+
+            Waypoint waypoint = gui.getWaypoint();
+
+            waypointManager.removeWaypoint(waypoint);
+            sendFeedback(ctx, "There is no waypoint with name " + waypoint.getName() + " in dimension " + waypoint.getDimension(), true);
+
+        } catch (Exception e) {
+            sendFeedback(ctx, "An error has occured: " + e, true);
+        }
+        return 1;
+    }
+
     private static int modifyIcon(CommandContext<ServerCommandSource> ctx) {
 
         try {
@@ -437,12 +457,14 @@ public class MechTourMod {
             }
 
             MapGuiHolder holder = guiHolders.get(ctx.getSource().getPlayer());
-        
-            if (holder == null || !holder.isPanelOpen() || holder.getGui() == null || !(holder.getGui() instanceof WaypointsMenuGui)){
+
+            if (holder == null || !holder.isPanelOpen() || holder.getGui() == null
+                    || !(holder.getGui() instanceof WaypointsMenuGui)) {
                 sendFeedback(ctx, "Waypoint gui is not open!", true);
+                return 1;
             }
 
-            WaypointsMenuGui gui = (WaypointsMenuGui)holder.getGui();
+            WaypointsMenuGui gui = (WaypointsMenuGui) holder.getGui();
 
             Waypoint waypoint = gui.getWaypoint();
 
@@ -453,8 +475,8 @@ public class MechTourMod {
             String icon = StringArgumentType.getString(ctx, "icon");
             waypoint.setIconName(icon);
             waypointManager.waypointsUpdated();
-            sendFeedback(ctx, "Changed icon of waypoint " + waypoint.getName() + " in dimension " + waypoint.getDimension() + " to " + icon + "!",
-                    true);
+            sendFeedback(ctx, "Changed icon of waypoint " + waypoint.getName() + " in dimension "
+                    + waypoint.getDimension() + " to " + icon + "!", true);
         } catch (Exception e) {
             sendFeedback(ctx, "An error has occured: " + e, true);
         }
@@ -475,12 +497,14 @@ public class MechTourMod {
             }
 
             MapGuiHolder holder = guiHolders.get(ctx.getSource().getPlayer());
-        
-            if (holder == null || !holder.isPanelOpen() || holder.getGui() == null || !(holder.getGui() instanceof WaypointsMenuGui)){
+
+            if (holder == null || !holder.isPanelOpen() || holder.getGui() == null
+                    || !(holder.getGui() instanceof WaypointsMenuGui)) {
                 sendFeedback(ctx, "Waypoint gui is not open!", true);
+                return 1;
             }
 
-            WaypointsMenuGui gui = (WaypointsMenuGui)holder.getGui();
+            WaypointsMenuGui gui = (WaypointsMenuGui) holder.getGui();
 
             Waypoint waypoint = gui.getWaypoint();
 
@@ -492,8 +516,8 @@ public class MechTourMod {
             String newname = StringArgumentType.getString(ctx, "newname");
             waypoint.setName(newname);
             waypointManager.waypointsUpdated();
-            sendFeedback(ctx,
-                    "Changed name of waypoint " + waypoint.getName() + " in dimension " + waypoint.getDimension() + " to " + newname + "!", true);
+            sendFeedback(ctx, "Changed name of waypoint " + waypoint.getName() + " in dimension "
+                    + waypoint.getDimension() + " to " + newname + "!", true);
         } catch (Exception e) {
             sendFeedback(ctx, "An error has occured: " + e, true);
         }
@@ -677,14 +701,14 @@ public class MechTourMod {
         return !stack.isEmpty() && stack.hasTag() && stack.getTag().contains("mechtour_guide_item");
     }
 
-
     public static void onUpdateSelectedSlot(ServerPlayNetworkHandler serverPlayNetworkHandler, int selectedSlot) {
 
         ServerPlayerEntity player = serverPlayNetworkHandler.player;
         ItemStack stack = player.inventory.getStack(selectedSlot);
         if (isGuideItem(stack) && !Configs.configs.disableGuideItem && !Configs.configs.disableGuideHoldMessage) {
             if (Configs.configs.vanillaMode) {
-                if (!Configs.configs.disableWaypoints && !Configs.configs.disableTourTeleport) sendActionBarMessage(player, "Use to teleport to tour");
+                if (!Configs.configs.disableWaypoints && !Configs.configs.disableTourTeleport)
+                    sendActionBarMessage(player, "Use to teleport to tour");
             } else {
                 sendActionBarMessage(player, "Use to open menu");
             }
@@ -822,7 +846,8 @@ public class MechTourMod {
     }
 
     private static void sendToOps(MinecraftServer server, String message) {
-        if (!Configs.configs.broadcastTeleportsToOps) return;
+        if (!Configs.configs.broadcastTeleportsToOps)
+            return;
         Text text = (new LiteralText(message)).formatted(new Formatting[] { Formatting.GRAY, Formatting.ITALIC });
 
         if (server.getGameRules().getBoolean(GameRules.SEND_COMMAND_FEEDBACK)) {

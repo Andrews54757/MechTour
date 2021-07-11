@@ -117,6 +117,11 @@ public class WaypointManager {
         return count;
     }
 
+    public void removeWaypoint(Waypoint waypoint) {
+        waypoints.remove(waypoint);
+        waypointsUpdated();
+    }
+
     public Waypoint getWaypoint(String dimension, String name) {
 
         Iterator<Waypoint> it = waypoints.iterator();
