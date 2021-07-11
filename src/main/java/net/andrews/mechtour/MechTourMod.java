@@ -716,7 +716,7 @@ public class MechTourMod {
 
         ServerPlayerEntity player = serverPlayNetworkHandler.player;
         ItemStack stack = player.inventory.getStack(selectedSlot);
-        if (isGuideItem(stack) && !Configs.configs.disableGuideItem) {
+        if (isGuideItem(stack) && !Configs.configs.disableGuideItem && !Configs.configs.disableGuideHoldMessage) {
             if (Configs.configs.vanillaMode) {
                 sendActionBarMessage(player, "Use to teleport to tour");
             } else {
@@ -727,7 +727,7 @@ public class MechTourMod {
     }
 
     public static void sendActionBarMessage(ServerPlayerEntity player, String str) {
-        Utils.sendPacket(player, new TitleS2CPacket(Action.ACTIONBAR, new LiteralText(str), 0, 20 * 4, 20));
+        Utils.sendPacket(player, new TitleS2CPacket(Action.ACTIONBAR, new LiteralText(str), 0, 20 * 3, 15));
     }
 
     public static void openGuideGUI(ServerPlayerEntity player) {
