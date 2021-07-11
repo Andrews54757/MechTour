@@ -16,8 +16,6 @@ public class Waypoint {
     String name;
     String dimension;
 
-    @Expose(serialize = false) 
-    WaypointIcons.Icon cachedIcon = null;
 
     @Expose(serialize = false) 
     MapText cachedText = null;
@@ -50,10 +48,8 @@ public class Waypoint {
     }
 
     public WaypointIcons.Icon getIcon() {
-        if (cachedIcon == null) {
-            cachedIcon = WaypointIcons.getIconByName(iconName);
-        }
-        return cachedIcon;
+       
+        return WaypointIcons.getIconByName(iconName);
     }
     public MapText getTextIcon() {
         if (cachedText == null) {

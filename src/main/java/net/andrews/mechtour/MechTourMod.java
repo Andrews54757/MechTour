@@ -156,6 +156,49 @@ public class MechTourMod {
                                                                                                 .getValue().getPath()),
                                                                                 b))
                                                         .executes(MechTourMod::removeWaypoint))))
+                                .then(CommandManager.literal("modifyIcon").requires((serverCommandSource) -> {
+                                    return serverCommandSource.hasPermissionLevel(2);
+                                }).then(CommandManager
+                                        .argument("dimension", DimensionArgumentType.dimension()).then(
+                                                CommandManager
+                                                        .argument("name",
+                                                                StringArgumentType.string())
+                                                        .suggests(
+                                                                (c, b) -> CommandSource
+                                                                        .suggestMatching(
+                                                                                waypointManager.getWaypointNames(
+                                                                                        DimensionArgumentType
+                                                                                                .getDimensionArgument(c,
+                                                                                                        "dimension")
+                                                                                                .getRegistryKey()
+                                                                                                .getValue().getPath()),
+                                                                                b))
+                                                        .then(CommandManager.argument("icon", StringArgumentType.word())
+                                                                .suggests((c, b) -> CommandSource.suggestMatching(
+                                                                        WaypointIcons.getIconNames(), b))
+                                                                .executes(MechTourMod::modifyIcon)))))
+                                .then(CommandManager.literal("modifyName").requires((serverCommandSource) -> {
+                                    return serverCommandSource.hasPermissionLevel(2);
+                                }).then(CommandManager
+                                        .argument("dimension", DimensionArgumentType.dimension()).then(
+                                                CommandManager
+                                                        .argument("name",
+                                                                StringArgumentType.string())
+                                                        .suggests(
+                                                                (c, b) -> CommandSource
+                                                                        .suggestMatching(
+                                                                                waypointManager.getWaypointNames(
+                                                                                        DimensionArgumentType
+                                                                                                .getDimensionArgument(c,
+                                                                                                        "dimension")
+                                                                                                .getRegistryKey()
+                                                                                                .getValue().getPath()),
+                                                                                b))
+                                                        .then(CommandManager
+                                                                .argument("newname", StringArgumentType.greedyString())
+                                                                .suggests((c, b) -> CommandSource.suggestMatching(
+                                                                        WaypointIcons.getIconNames(), b))
+                                                                .executes(MechTourMod::modifyName)))))
                                 .then(CommandManager.literal("reload").requires((serverCommandSource) -> {
                                     return serverCommandSource.hasPermissionLevel(2);
                                 }).executes(MechTourMod::reloadCommand)));
@@ -387,6 +430,86 @@ public class MechTourMod {
         } catch (Exception e) {
             sendFeedback(ctx, "An error has occured: " + e, true);
 
+        }
+
+        return 1;
+    }
+
+    private static int modifyIcon(CommandContext<ServerCommandSource> ctx) {
+
+        try {
+            if (Configs.configs.disableWaypoints) {
+                sendFeedback(ctx, "Waypoints are disabled!");
+                return 1;
+            }
+            if (Configs.configs.disableWaypointEdits) {
+                sendFeedback(ctx, "Waypoint editing is disabled!");
+                return 1;
+            }
+
+            String dimension;
+
+            try {
+                dimension = DimensionArgumentType.getDimensionArgument(ctx, "dimension").getRegistryKey().getValue()
+                        .getPath();
+
+            } catch (Exception e) {
+                dimension = ctx.getSource().getWorld().getRegistryKey().getValue().getPath();
+            }
+
+            String name = StringArgumentType.getString(ctx, "name");
+            Waypoint waypoint = waypointManager.getWaypoint(dimension, name);
+            if (waypoint == null) {
+                sendFeedback(ctx, "No waypoint " + name + " in dimension " + dimension + " exists!", true);
+                return 1;
+            }
+            String icon = StringArgumentType.getString(ctx, "icon");
+            waypoint.setIconName(icon);
+            waypointManager.waypointsUpdated();
+            sendFeedback(ctx, "Changed icon of waypoint " + name + " in dimension " + dimension + " to " + icon + "!",
+                    true);
+        } catch (Exception e) {
+            sendFeedback(ctx, "An error has occured: " + e, true);
+        }
+
+        return 1;
+    }
+
+    private static int modifyName(CommandContext<ServerCommandSource> ctx) {
+
+        try {
+            if (Configs.configs.disableWaypoints) {
+                sendFeedback(ctx, "Waypoints are disabled!");
+                return 1;
+            }
+            if (Configs.configs.disableWaypointEdits) {
+                sendFeedback(ctx, "Waypoint editing is disabled!");
+                return 1;
+            }
+
+            String dimension;
+
+            try {
+                dimension = DimensionArgumentType.getDimensionArgument(ctx, "dimension").getRegistryKey().getValue()
+                        .getPath();
+
+            } catch (Exception e) {
+                dimension = ctx.getSource().getWorld().getRegistryKey().getValue().getPath();
+            }
+
+            String name = StringArgumentType.getString(ctx, "name");
+            Waypoint waypoint = waypointManager.getWaypoint(dimension, name);
+            if (waypoint == null) {
+                sendFeedback(ctx, "No waypoint " + name + " in dimension " + dimension + " exists!", true);
+                return 1;
+            }
+            String newname = StringArgumentType.getString(ctx, "newname");
+            waypoint.setName(newname);
+            waypointManager.waypointsUpdated();
+            sendFeedback(ctx,
+                    "Changed name of waypoint " + name + " in dimension " + dimension + " to " + newname + "!", true);
+        } catch (Exception e) {
+            sendFeedback(ctx, "An error has occured: " + e, true);
         }
 
         return 1;
@@ -697,8 +820,8 @@ public class MechTourMod {
     }
 
     private static void sendToOps(MinecraftServer server, String message) {
-        Text text = (new LiteralText(message)).formatted(new Formatting[]{Formatting.GRAY, Formatting.ITALIC});
-    
+        Text text = (new LiteralText(message)).formatted(new Formatting[] { Formatting.GRAY, Formatting.ITALIC });
+
         if (server.getGameRules().getBoolean(GameRules.SEND_COMMAND_FEEDBACK)) {
             Iterator<ServerPlayerEntity> var3 = server.getPlayerManager().getPlayerList().iterator();
             while (var3.hasNext()) {

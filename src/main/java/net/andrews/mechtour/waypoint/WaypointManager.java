@@ -52,7 +52,7 @@ public class WaypointManager {
     }
 
 
-    private void waypointsUpdated() {
+    public void waypointsUpdated() {
 
         saveToFile();
         updateTracked();
