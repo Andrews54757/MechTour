@@ -25,7 +25,7 @@ public class Waypoint {
         this.y = y;
         this.z = z;
         this.name = name;
-        this.icon = icon;
+        this.icon = iconName;
         this.dimension = dimension;
     }
 
@@ -84,15 +84,19 @@ public class Waypoint {
 
     public void setName(String name) {
         this.name = name;
+        this.cachedText = null;
     }
     public void setX(int x) {
         this.x = x;
+        this.cachedPosText = null;
     }
     public void setY(int y) {
         this.y = y;
+        this.cachedPosText = null;
     }
     public void setZ(int z) {
         this.z = z;
+        this.cachedPosText = null;
     }
     public void setDimension(String dimension) {
         this.dimension = dimension;
