@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 
 import com.google.gson.Gson;
-import com.google.gson.annotations.Expose;
 
 import net.fabricmc.loader.api.FabricLoader;
 
@@ -16,8 +15,7 @@ public class Configs {
     public boolean disableWaypoints = false;
     public boolean vanillaMode = false;
 
-    @Expose(serialize = false) 
-    public static Configs configs;
+    public transient static Configs configs;
   
     public static Iterable<String> getFields() {
        ArrayList<String> out = new ArrayList<>();

@@ -20,7 +20,6 @@ import net.andrews.mechtour.mapgui.gui.Resources;
 import net.andrews.mechtour.waypoint.Waypoint;
 import net.andrews.mechtour.waypoint.WaypointIcons;
 import net.andrews.mechtour.waypoint.WaypointManager;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.DimensionArgumentType;
 import net.minecraft.command.argument.EntityArgumentType;
@@ -69,14 +68,7 @@ public class MechTourMod {
 
     public static void init() {
 
-        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
-            registerCommands(dispatcher);
-            Resources.noop();
-            WaypointIcons.noop();
-            waypointManager = new WaypointManager();
-
-            Configs.loadFromFile();
-        });
+      
 
         // Initialize resources
         // Resources.noop();
@@ -84,7 +76,13 @@ public class MechTourMod {
 
     }
 
-    private static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher) {
+
+        Resources.noop();
+        WaypointIcons.noop();
+        waypointManager = new WaypointManager();
+
+        Configs.loadFromFile();
 
         dispatcher.register(CommandManager.literal("mechtour").requires((serverCommandSource) -> {
             return serverCommandSource.hasPermissionLevel(2);
@@ -201,7 +199,7 @@ public class MechTourMod {
                                                                 .executes(MechTourMod::modifyName)))))
                                 .then(CommandManager.literal("reload").requires((serverCommandSource) -> {
                                     return serverCommandSource.hasPermissionLevel(2);
-                                }).executes(MechTourMod::reloadCommand)));
+                                }).then(CommandManager.literal("icons").executes(MechTourMod::reloadIconsCommand)).executes(MechTourMod::reloadCommand)));
 
         dispatcher.register(CommandManager.literal("tpw").requires((serverCommandSource) -> {
             return serverCommandSource.hasPermissionLevel(2);
@@ -317,12 +315,33 @@ public class MechTourMod {
                 return 1;
             }
 
+            waypointManager.loadFromFile();
+            sendFeedback(ctx, "Reloaded waypoints!", true);
+        } catch (Exception e) {
+            sendFeedback(ctx, "An error has occured: " + e, true);
+
+        }
+        return 1;
+    }
+
+
+    private static int reloadIconsCommand(CommandContext<ServerCommandSource> ctx) {
+
+        try {
+            if (Configs.configs.disableWaypoints) {
+                sendFeedback(ctx, "Waypoints are disabled!");
+                return 1;
+            }
+            if (Configs.configs.disableWaypointEdits) {
+                sendFeedback(ctx, "Waypoint editing is disabled!");
+                return 1;
+            }
+
             WaypointIcons.load();
             waypointManager.loadFromFile();
             sendFeedback(ctx, "Reloaded waypoints and icons", true);
         } catch (Exception e) {
             sendFeedback(ctx, "An error has occured: " + e, true);
-
         }
         return 1;
     }

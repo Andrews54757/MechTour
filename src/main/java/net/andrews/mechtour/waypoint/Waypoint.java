@@ -2,7 +2,6 @@ package net.andrews.mechtour.waypoint;
 
 import net.andrews.mechtour.Utils;
 import net.andrews.mechtour.mapgui.MapText;
-import com.google.gson.annotations.Expose;
 
 import java.awt.Font;
 
@@ -17,11 +16,9 @@ public class Waypoint {
     String dimension;
 
 
-    @Expose(serialize = false) 
-    MapText cachedText = null;
+    transient MapText cachedText = null;
 
-    @Expose(serialize = false) 
-    MapText cachedPosText = null;
+    transient MapText cachedPosText = null;
 
     public Waypoint(int x, int y, int z, String dimension, String name, String iconName) {
         this.x = x;
@@ -60,7 +57,7 @@ public class Waypoint {
 
     public MapText getPosText() {
         if (cachedPosText == null) {
-            cachedPosText = new MapText("(" + this.getX() + ", " + this.getY() + ", " + this.getZ() + ")", new Font("Arial", Font.PLAIN, 45));
+            cachedPosText = new MapText("TP > " + this.getX() + ", " + this.getY() + ", " + this.getZ() + "", new Font("Arial", Font.PLAIN, 45));
         }
         return cachedPosText;
     }

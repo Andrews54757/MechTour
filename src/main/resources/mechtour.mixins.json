@@ -6,7 +6,8 @@
   "mixins": [
     "MixinMinecraftServer",
     "MixinServerPlayNetworkHandler",
-    "MixinServerPlayerInteractionManager"
+    "MixinServerPlayerInteractionManager",
+    "MixinCommandManager"
   ],
   "client": [
   ],
