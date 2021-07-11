@@ -684,7 +684,7 @@ public class MechTourMod {
         ItemStack stack = player.inventory.getStack(selectedSlot);
         if (isGuideItem(stack) && !Configs.configs.disableGuideItem && !Configs.configs.disableGuideHoldMessage) {
             if (Configs.configs.vanillaMode) {
-                sendActionBarMessage(player, "Use to teleport to tour");
+                if (!Configs.configs.disableWaypoints && !Configs.configs.disableTourTeleport) sendActionBarMessage(player, "Use to teleport to tour");
             } else {
                 sendActionBarMessage(player, "Use to open menu");
             }
@@ -780,6 +780,11 @@ public class MechTourMod {
         ServerPlayerEntity guidePlayer = currentGuidePlayer == null ? null
                 : player.getServer().getPlayerManager().getPlayer(currentGuidePlayer);
 
+        if (Configs.configs.disableTourTeleport) {
+            sendActionBarMessage(player, "Teleport to tour is disabled!");
+            return;
+        }
+
         if (guidePlayer == null || !guidePlayer.isAlive()) {
             sendActionBarMessage(player, "There is no tour guide to teleport to!");
             return;
@@ -840,6 +845,11 @@ public class MechTourMod {
 
         if (Configs.configs.disableWaypoints) {
             sendActionBarMessage(player, "Waypoints are disabled!");
+            return;
+        }
+
+        if (Configs.configs.disableWaypointsTeleport) {
+            sendActionBarMessage(player, "Waypoint teleports are disabled!");
             return;
         }
 

@@ -14,6 +14,8 @@ public class Configs {
 
     public boolean disableWaypointEdits = false;
     public boolean disableWaypoints = false;
+    public boolean disableWaypointsTeleport = false;
+    public boolean disableTourTeleport = false;
     public boolean vanillaMode = false;
     public boolean disableGuideItem = false;
     public boolean disableGuideHoldMessage = false;
