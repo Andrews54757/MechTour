@@ -11,7 +11,7 @@ public class Waypoint {
     int x;
     int y;
     int z;
-    String iconName;
+    String icon;
     String name;
     String dimension;
 
@@ -25,7 +25,7 @@ public class Waypoint {
         this.y = y;
         this.z = z;
         this.name = name;
-        this.iconName = iconName;
+        this.icon = icon;
         this.dimension = dimension;
     }
 
@@ -46,7 +46,7 @@ public class Waypoint {
 
     public WaypointIcons.Icon getIcon() {
        
-        return WaypointIcons.getIconByName(iconName);
+        return WaypointIcons.getIconByName(icon);
     }
     public MapText getTextIcon() {
         if (cachedText == null) {
@@ -79,7 +79,7 @@ public class Waypoint {
     }
 
     public String getIconName() {
-        return iconName;
+        return icon;
     }
 
     public void setName(String name) {
@@ -98,7 +98,7 @@ public class Waypoint {
         this.dimension = dimension;
     }
     public void setIconName(String iconName) {
-        this.iconName = iconName;
+        this.icon = icon;
     }
 
 
