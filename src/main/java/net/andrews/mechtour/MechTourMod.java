@@ -710,7 +710,18 @@ public class MechTourMod {
         return !stack.isEmpty() && stack.hasTag() && stack.getTag().contains("mechtour_guide_item");
     }
 
+
     public static void onUpdateSelectedSlot(ServerPlayNetworkHandler serverPlayNetworkHandler, int selectedSlot) {
+
+        ServerPlayerEntity player = serverPlayNetworkHandler.player;
+        ItemStack stack = player.inventory.getStack(selectedSlot);
+        if (isGuideItem(stack)) {
+            if (Configs.configs.vanillaMode) {
+                sendActionBarMessage(player, "Use to teleport to tour");
+            } else {
+                sendActionBarMessage(player, "Use to open menu");
+            }
+        }
 
     }
 
@@ -731,11 +742,11 @@ public class MechTourMod {
 
         if (holder.isPanelOpen()) {
             holder.closePanel();
-            sendActionBarMessage(player, "Closed guide!");
+            sendActionBarMessage(player, "Closed guide menu!");
         } else {
 
             holder.openPanel(playerPos, facing, 7, 4);
-            sendActionBarMessage(player, "Opened guide!");
+            sendActionBarMessage(player, "Opened guide menu!");
         }
 
     }
