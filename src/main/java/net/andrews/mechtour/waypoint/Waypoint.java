@@ -50,7 +50,7 @@ public class Waypoint {
     }
     public MapText getTextIcon() {
         if (cachedText == null) {
-            cachedText = new MapText(Utils.wordWrap(this.getName(), 14), new Font("Arial", Font.PLAIN, 25));
+            cachedText = new MapText(Utils.wordWrap(this.getName(), 18), new Font("Arial", Font.PLAIN, this.getName().length() > 14 ? 20 : 25));
         }
         return cachedText;
     }
