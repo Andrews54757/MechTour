@@ -6,11 +6,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import net.fabricmc.loader.api.FabricLoader;
 
 public class Configs {
-    
+
     public boolean disableWaypointEdits = false;
     public boolean disableWaypoints = false;
     public boolean vanillaMode = false;
@@ -19,37 +20,37 @@ public class Configs {
     public boolean broadcastTeleportsToOps = true;
 
     public transient static Configs configs;
-  
+
     public static Iterable<String> getFields() {
-       ArrayList<String> out = new ArrayList<>();
+        ArrayList<String> out = new ArrayList<>();
 
-       Field[] fields = configs.getClass().getDeclaredFields();
+        Field[] fields = configs.getClass().getDeclaredFields();
 
-       for (Field field : fields) {
+        for (Field field : fields) {
             if (!java.lang.reflect.Modifier.isStatic(field.getModifiers())) {
                 out.add(field.getName());
             }
-       }
-       return out;
-       
+        }
+        return out;
+
     }
 
     public static boolean setConfig(String name, Object value) {
         try {
-        Field field = configs.getClass().getDeclaredField(name);
-        if (java.lang.reflect.Modifier.isStatic(field.getModifiers())) return false;
-        field.setAccessible(true);
-        if (field.getType().getName().equals("boolean")) {
-            value = Boolean.valueOf((String)value);
-        }
-        field.set(configs, value);
-        saveToFile();
+            Field field = configs.getClass().getDeclaredField(name);
+            if (java.lang.reflect.Modifier.isStatic(field.getModifiers()))
+                return false;
+            field.setAccessible(true);
+            if (field.getType().getName().equals("boolean")) {
+                value = Boolean.valueOf((String) value);
+            }
+            field.set(configs, value);
+            saveToFile();
             return true;
         } catch (Exception e) {
             System.out.println(e);
             return false;
         }
-
 
     }
 
@@ -60,19 +61,17 @@ public class Configs {
             str = "{}";
         }
         Gson gson = new Gson();
-        configs = gson.fromJson(str,Configs.class);
+        configs = gson.fromJson(str, Configs.class);
         saveToFile();
         System.out.println("Loaded configs");
     }
 
-
     public static void saveToFile() {
-        Gson gson = new Gson();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String json = gson.toJson(configs);
- 
+
         Path path = FabricLoader.getInstance().getConfigDir().resolve("mechtour/config.json");
-        if (Files.notExists(path.getParent()))
-        {
+        if (Files.notExists(path.getParent())) {
             try {
                 Files.createDirectories(path.getParent());
             } catch (Exception e) {
@@ -81,7 +80,7 @@ public class Configs {
         }
 
         Utils.writeTextFile(path, json);
-       
+
     }
 
 }

@@ -5,15 +5,16 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import net.andrews.mechtour.Utils;
 import net.andrews.mechtour.mapgui.gui.WaypointsMenuGui;
 import net.fabricmc.loader.api.FabricLoader;
 
 public class WaypointManager {
-    
+
     private ArrayList<Waypoint> waypoints = new ArrayList<>();
-    
+
     private HashSet<WaypointsMenuGui> trackedGuis = new HashSet<>();
 
     public WaypointManager() {
@@ -21,10 +22,11 @@ public class WaypointManager {
         loadFromFile();
 
     }
-    
+
     public void beginTrack(WaypointsMenuGui gui) {
         trackedGuis.add(gui);
     }
+
     public void stopTrack(WaypointsMenuGui gui) {
         trackedGuis.remove(gui);
     }
@@ -37,10 +39,11 @@ public class WaypointManager {
 
     public void loadFromFile() {
         String str = Utils.readTextFile(FabricLoader.getInstance().getConfigDir().resolve("mechtour/waypoints.json"));
-        if (str == null) str = "[]";
+        if (str == null)
+            str = "[]";
         Gson gson = new Gson();
-        Waypoint[] wps = gson.fromJson(str,Waypoint[].class);
- 
+        Waypoint[] wps = gson.fromJson(str, Waypoint[].class);
+
         System.out.println("Found " + wps.length + " waypoints");
 
         waypoints.clear();
@@ -48,21 +51,21 @@ public class WaypointManager {
             waypoints.add(waypoint);
         }
         waypointsUpdated();
-      
-    }
 
+    }
 
     public void waypointsUpdated() {
 
         saveToFile();
         updateTracked();
     }
+
     public void saveToFile() {
-        Gson gson = new Gson();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String json = gson.toJson(waypoints);
- 
+
         Utils.writeTextFile(FabricLoader.getInstance().getConfigDir().resolve("mechtour/waypoints.json"), json);
-       
+
     }
 
     public ArrayList<Waypoint> getWaypoints() {
@@ -79,12 +82,12 @@ public class WaypointManager {
         }
         return newarr;
     }
+
     public void addWaypoint(int x, int y, int z, String dimension, String name, String iconName) {
-        waypoints.add(new Waypoint(x,y,z,dimension,name,iconName));
+        waypoints.add(new Waypoint(x, y, z, dimension, name, iconName));
 
         waypointsUpdated();
     }
-
 
     public Iterable<String> getWaypointNames(String dimension) {
 
@@ -97,7 +100,6 @@ public class WaypointManager {
 
         return names;
     }
-
 
     public int removeWaypoint(String dimension, String name) {
 
@@ -127,6 +129,5 @@ public class WaypointManager {
 
         return null;
     }
-
 
 }

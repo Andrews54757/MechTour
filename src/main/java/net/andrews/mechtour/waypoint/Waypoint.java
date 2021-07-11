@@ -37,7 +37,7 @@ public class Waypoint {
     }
 
     public String voxelmap_string() {
-        return String.format("[name:%s, x:%s, y:%s, z:%s, dim:%s, icon:%s]", scrubNameRegex(name), Integer.valueOf(getX()), Integer.valueOf(getY()), Integer.valueOf(getZ()), getDimension(), getIconName());
+        return String.format("[name:%s, x:%s, y:%s, z:%s, dim:minecraft:%s, icon:%s]", scrubNameRegex(name), Integer.valueOf(getX()), Integer.valueOf(getY()), Integer.valueOf(getZ()), getDimension(), getIconName());
     }
 
     public String getName() {
