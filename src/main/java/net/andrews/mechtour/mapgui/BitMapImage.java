@@ -34,7 +34,7 @@ public class BitMapImage {
         try {
             toProcess = ImageIO.read(new File(path.toString()));
 
-            System.out.println("[MechTour] Loaded " + image);
+        //    System.out.println("[MechTour] Loaded " + image);
         } catch (IOException e) {
             System.out.println("[MechTour] Could not read image " + image + " - " + e);
         }
