@@ -328,10 +328,10 @@ public class MapGuiHolder {
 
             if (selectedSlot == prev) {
                 clicked = 5;
-                onScrollDown();
+                onScrollUp();
             } else if (selectedSlot == after) {
                 clicked = 5;
-                onScrollUp();
+                onScrollDown();
             }
 
         } else if (lockedSlot == -1) {
