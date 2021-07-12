@@ -92,7 +92,7 @@ public class MechTourMod {
                                 .executes(MechTourMod::giveGuides))
 
                         .executes(MechTourMod::giveGuide)))
-                .then(CommandManager.literal("set")
+                .then(CommandManager.literal("config")
                         .then(CommandManager.argument("name", StringArgumentType.word())
                                 .suggests((c, b) -> CommandSource.suggestMatching(Configs.getFields(), b))
                                 .then(CommandManager.argument("value", StringArgumentType.greedyString())
@@ -206,7 +206,7 @@ public class MechTourMod {
             String value = StringArgumentType.getString(ctx, "value");
 
             if (Configs.setConfig(name, value)) {
-                sendFeedback(ctx, "Set " + name + " to " + value, true);
+                sendFeedback(ctx, "Set " + name + " to:\n" + value, true);
             } else {
                 sendFeedback(ctx, "Failed to set " + name + " to " + value, true);
             }
@@ -224,7 +224,7 @@ public class MechTourMod {
             String name = StringArgumentType.getString(ctx, "name");
 
         
-            sendFeedback(ctx, name + " is set to " + Configs.getConfig(name), true);
+            sendFeedback(ctx, name + " is set to:\n" + Configs.getConfig(name), true);
           
                
             
