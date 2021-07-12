@@ -78,11 +78,11 @@ public class MechTourMod {
 
     public static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher) {
 
+        Configs.loadFromFile();
+
         Resources.noop();
         WaypointIcons.noop();
         waypointManager = new WaypointManager();
-
-        Configs.loadFromFile();
 
         dispatcher.register(CommandManager.literal("mechtour").requires((serverCommandSource) -> {
             return serverCommandSource.hasPermissionLevel(2);

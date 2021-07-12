@@ -11,6 +11,7 @@ import java.awt.RenderingHints;
 
 import javax.imageio.ImageIO;
 
+import net.andrews.mechtour.mapgui.color.ColorMatcher;
 import net.fabricmc.loader.api.FabricLoader;
 
 public class BitMapImage {
