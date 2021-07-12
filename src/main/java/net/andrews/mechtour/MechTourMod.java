@@ -763,7 +763,8 @@ public class MechTourMod {
                 if (!Configs.configs.disableWaypoints && !Configs.configs.disableTourTeleport)
                     sendActionBarMessage(player, "Use to teleport to tour");
             } else {
-                sendActionBarMessage(player, "Use to open menu");
+                if (holder == null || !holder.isPanelOpen())
+                    sendActionBarMessage(player, "Use to open menu");
             }
         }
 
