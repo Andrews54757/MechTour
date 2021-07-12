@@ -38,10 +38,12 @@ public abstract class MapGuiBase {
         for (InteractableElement element : this.interactableElements) {
             element.onMousePosChange(holder, newMouseX, newMouseY, oldMouseX, oldMouseY);
         }
-      
+
     }
+
     public boolean shouldReRender(MapGuiHolder holder) {
-        if (shouldRenderAgain) return true;
+        if (shouldRenderAgain)
+            return true;
 
         for (InteractableElement element : this.interactableElements) {
             if (element.shouldReRender(holder)) {
@@ -56,7 +58,6 @@ public abstract class MapGuiBase {
         shouldRenderAgain = value;
     }
 
-
     public void onClick(boolean isInteractKey, MapGuiHolder holder) {
 
         for (InteractableElement element : this.interactableElements) {
@@ -67,7 +68,21 @@ public abstract class MapGuiBase {
 
     }
 
+    public void onScrollDown() {
+        for (InteractableElement element : this.interactableElements) {
+            element.onScrollDown();
 
-    
+        }
+    }
+
+    public void onScrollUp() {
+        for (InteractableElement element : this.interactableElements) {
+            element.onScrollUp();
+        }
+    }
+
+    public boolean isScrollable() {
+        return false;
+    }
 
 }

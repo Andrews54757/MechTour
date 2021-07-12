@@ -310,4 +310,9 @@ public class WaypointsMenuGui extends MapGuiBase {
         super.onClose(holder);
     }
 
+    @Override
+    public boolean isScrollable() {
+        return pages > 1;
+    }
+
 }

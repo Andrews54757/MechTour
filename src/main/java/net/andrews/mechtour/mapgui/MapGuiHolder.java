@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import net.andrews.mechtour.Utils;
 import net.andrews.mechtour.mapgui.gui.MapGuiBase;
 import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
+import net.minecraft.network.packet.s2c.play.HeldItemChangeS2CPacket;
+import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.BlockHitResult;
@@ -37,6 +39,8 @@ public class MapGuiHolder {
     private int clicked = 0;
 
     private MapGuiBase mapGui;
+    private int prevSlot = -1;
+    private int lockedSlot = -1;
 
     private static int PREFIX = 1000000000;
 
@@ -303,5 +307,55 @@ public class MapGuiHolder {
 
     public ServerPlayerEntity getPlayer() {
         return player;
+    }
+
+    public boolean onUpdateSelectedSlot(ServerPlayNetworkHandler serverPlayNetworkHandler, int selectedSlot) {
+     
+        if (!isTrackingPanel() || !isScrollable()) {
+            lockedSlot = -1;
+        } else if (lockedSlot == -1 && prevSlot != -1) {
+            lockedSlot = prevSlot;
+        }
+        
+       
+        if (lockedSlot != -1 && clicked == 0) {
+            serverPlayNetworkHandler.sendPacket(new HeldItemChangeS2CPacket(lockedSlot));
+            
+            int prev = lockedSlot - 1;
+            int after = lockedSlot + 1;
+            if (prev < 0) prev = 8;
+            if (after >= 8) after = 0;
+
+            if (selectedSlot == prev) {
+                clicked = 5;
+                onScrollDown();
+            } else if (selectedSlot == after) {
+                clicked = 5;
+                onScrollUp();
+            }
+
+        } else if (lockedSlot == -1) {
+            prevSlot = selectedSlot;
+        }
+      
+        return lockedSlot != -1;
+    }
+
+    private boolean isScrollable() {
+        if (this.mapGui == null)
+        return false;
+        return this.mapGui.isScrollable();
+    }
+
+    private void onScrollDown() {
+        if (this.mapGui == null)
+        return;
+        this.mapGui.onScrollDown();
+    }
+
+    private void onScrollUp() {
+        if (this.mapGui == null)
+        return;
+        this.mapGui.onScrollUp();
     }
 }

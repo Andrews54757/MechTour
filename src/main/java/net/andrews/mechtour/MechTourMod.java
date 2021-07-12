@@ -748,6 +748,15 @@ public class MechTourMod {
     public static void onUpdateSelectedSlot(ServerPlayNetworkHandler serverPlayNetworkHandler, int selectedSlot) {
 
         ServerPlayerEntity player = serverPlayNetworkHandler.player;
+
+        MapGuiHolder holder = guiHolders.get(player);
+        if (holder != null) {
+            if (holder.onUpdateSelectedSlot(serverPlayNetworkHandler, selectedSlot)) {
+                
+                return;
+            }
+        }
+
         ItemStack stack = player.inventory.getStack(selectedSlot);
         if (isGuideItem(stack) && !Configs.configs.disableGuideItem && !Configs.configs.disableGuideHoldMessage) {
             if (Configs.configs.vanillaMode) {

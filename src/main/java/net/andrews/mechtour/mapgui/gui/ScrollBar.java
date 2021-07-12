@@ -157,4 +157,14 @@ public class ScrollBar extends InteractableElement {
         return hoverPage == -1 ? currentPage : hoverPage;
     }
 
+    @Override
+    public void onScrollUp() {
+        this.decrementPage();
+        super.onScrollUp();
+    }
+    @Override
+    public void onScrollDown() {
+        this.incrementPage();
+        super.onScrollDown();
+    }
 }
