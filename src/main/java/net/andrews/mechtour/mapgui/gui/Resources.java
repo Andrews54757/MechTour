@@ -27,15 +27,6 @@ public class Resources {
     public static BitMapImage about_icon = new BitMapImage("about_icon.png").scaledDimensions(-1, 100).setColor(29, 113, 173)
             .setAlphaCutoff(250).bake();
     public static MapText about_text = new MapText("About", new Font("Arial", Font.PLAIN, 40));
-    
-    public static MapText about_content = new MapText(
-        "Welcome to Mechanists!\n\n" + "We are a Technical Minecraft server currently on 1.16.5\n\n"
-                + "Hardware: " + "CPU: Ryzen 5 3600, " + "RAM: 6GB\n" + "Seed: 3671431547008281909\n\n"
-                + "Mods We Use:\n" + "- carpet, carpet-addons & carpet-extra\n" + "- lithium\n\n"
-                + "Carpet Mod Features:\naccurateBlockPlacement, antiCheatDisabled, ctrlQCraftingFix, flippinCactus, missingTools,\nonePlayerSleeping, optimizedTNT, shulkerSpawningInEndCities, stackableShulkerBoxes,\nxpNoCooldown"
-                ,
-        new Font("Arial", Font.PLAIN, 20));
-    
 
     public static MapText about_title = new MapText("About", new Font("Arial", Font.PLAIN, 70));
 

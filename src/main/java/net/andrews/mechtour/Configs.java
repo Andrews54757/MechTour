@@ -1,5 +1,6 @@
 package net.andrews.mechtour;
 
+import java.awt.Font;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import net.andrews.mechtour.mapgui.MapText;
 import net.fabricmc.loader.api.FabricLoader;
 
 public class Configs {
@@ -21,8 +23,16 @@ public class Configs {
     public boolean disableGuideHoldMessage = false;
     public boolean broadcastTeleportsToOps = true;
     public boolean fastColorMatch = true;
-
+    
+    public String mapUrlBase = "http://mechanists.org/maps";
+    public String aboutText = "Welcome to Mechanists!\n\n" + "We are a Technical Minecraft server currently on 1.16.5\n\n"
+    + "Hardware: " + "CPU: Ryzen 5 3600, " + "RAM: 6GB\n" + "Seed: 3671431547008281909\n\n"
+    + "Mods We Use:\n" + "- carpet, carpet-addons & carpet-extra\n" + "- lithium\n\n"
+    + "Carpet Mod Features:\naccurateBlockPlacement, antiCheatDisabled, ctrlQCraftingFix, flippinCactus, missingTools,\nonePlayerSleeping, optimizedTNT, shulkerSpawningInEndCities, stackableShulkerBoxes,\nxpNoCooldown";
+    
     public transient static Configs configs;
+
+    public transient static MapText aboutTextCache;
 
     public static Iterable<String> getFields() {
         ArrayList<String> out = new ArrayList<>();
@@ -48,6 +58,7 @@ public class Configs {
                 value = Boolean.valueOf((String) value);
             }
             field.set(configs, value);
+            setupCaches();
             saveToFile();
             return true;
         } catch (Exception e) {
@@ -65,6 +76,7 @@ public class Configs {
         }
         Gson gson = new Gson();
         configs = gson.fromJson(str, Configs.class);
+        setupCaches();
         saveToFile();
         System.out.println("Loaded configs");
     }
@@ -83,7 +95,9 @@ public class Configs {
         }
 
         Utils.writeTextFile(path, json);
-
     }
 
+    public static void setupCaches() {
+        aboutTextCache = new MapText(Configs.configs.aboutText, new Font("Arial", Font.PLAIN, 20));
+    }
 }

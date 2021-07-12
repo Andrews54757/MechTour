@@ -1,5 +1,6 @@
 package net.andrews.mechtour.mapgui.gui;
 
+import net.andrews.mechtour.Configs;
 import net.andrews.mechtour.mapgui.MapGuiHolder;
 import net.andrews.mechtour.mapgui.MapRenderer;
 
@@ -46,7 +47,7 @@ public class AboutPageGUI extends MapGuiBase {
 
        
 
-        MapRenderer.drawText(holder, Resources.about_content, 20, 100, (byte) 40);
+        MapRenderer.drawText(holder, Configs.aboutTextCache, 20, 100, (byte) 40);
 
         backButton.setDimensions(10, 10, 100, 50);
         closeButton.setDimensions(holder.getPanelPixelWidth() - 100 - 10, 10, 100, 50);

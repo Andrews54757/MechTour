@@ -220,7 +220,6 @@ public class WaypointsMenuGui extends MapGuiBase {
 
     @Override
     public void onMousePosChange(MapGuiHolder holder, int newMouseX, int newMouseY, int oldMouseX, int oldMouseY) {
-        // TODO Auto-generated method stub
 
         int box = this.getItemFromPos(holder, newMouseX, newMouseY);
         if (box != currentBox) {
@@ -232,7 +231,6 @@ public class WaypointsMenuGui extends MapGuiBase {
 
     @Override
     public void onClick(boolean isInteractKey, MapGuiHolder holder) {
-        // TODO Auto-generated method stub
         Waypoint waypoint = getWaypoint();
         if (waypoint != null) {
 
@@ -297,15 +295,12 @@ public class WaypointsMenuGui extends MapGuiBase {
 
     @Override
     public void onOpen(MapGuiHolder holder) {
-        // TODO Auto-generated method stub
-
         MechTourMod.waypointManager.beginTrack(this);
         super.onOpen(holder);
     }
 
     @Override
     public void onClose(MapGuiHolder holder) {
-        // TODO Auto-generated method stub
         MechTourMod.waypointManager.stopTrack(this);
         super.onClose(holder);
     }

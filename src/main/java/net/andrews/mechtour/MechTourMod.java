@@ -889,7 +889,7 @@ public class MechTourMod {
             dimension = "survival%20-%20end/survivalend";
         }
 
-        String link = "http://mechanists.org/maps/#/" + player.getBlockPos().getX() + "/64/"
+        String link = Configs.configs.mapUrlBase + "/#/" + player.getBlockPos().getX() + "/64/"
                 + player.getBlockPos().getZ() + "/-1/" + dimension;
 
         player.sendSystemMessage(Text.Serializer.fromJson(

@@ -60,7 +60,6 @@ public class SimpleTextIconButton extends InteractableElement {
 
     @Override
     public void onMouseOut(MapGuiHolder holder, int mouseX, int mouseY) {
-        // TODO Auto-generated method stub
         this.setReRenderFlag(true);
     }
 }
