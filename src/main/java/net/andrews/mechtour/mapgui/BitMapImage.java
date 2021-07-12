@@ -11,6 +11,7 @@ import java.awt.RenderingHints;
 
 import javax.imageio.ImageIO;
 
+import net.andrews.mechtour.Configs;
 import net.andrews.mechtour.mapgui.color.ColorMatcher;
 import net.fabricmc.loader.api.FabricLoader;
 
@@ -24,6 +25,7 @@ public class BitMapImage {
     private byte[] mapImage = new byte[0];
 
     private int[] color = null;
+    private boolean matchSlow = false;
 
     public BitMapImage(String image) {
        // image = image.replaceAll("\\/","");
@@ -114,11 +116,12 @@ public class BitMapImage {
             if (a <= alphaCutoff) {
                 mapImage[mapOffset++] = 0;
             } else {
-                mapImage[mapOffset++] = ColorMatcher.getBestColor(r, g, b, a);
+                mapImage[mapOffset++] = ColorMatcher.getBestColor(r, g, b, a, Configs.configs.fastColorMatch && !matchSlow);
             }
         }
         toProcess = null;
         color = null;
+        matchSlow = false;
         return this;
     }
 
@@ -135,6 +138,10 @@ public class BitMapImage {
         color = new int[] {i,j,k};
         return this;
 
+    }
+    public BitMapImage setMatchSlow(boolean matchSlow) {
+        this.matchSlow = matchSlow;
+        return this;
     }
 
 }

@@ -1,7 +1,5 @@
 package net.andrews.mechtour.mapgui.color;
 
-import net.andrews.mechtour.Configs;
-
 public class ColorMatcher {
     private static int[][] MAP_COLORS;
     static {
@@ -44,13 +42,13 @@ public class ColorMatcher {
         }
 
     }
-    public static byte getBestColor(int r, int g, int b, int a) {
+    public static byte getBestColor(int r, int g, int b, int a, boolean fast) {
         int bestColor = 0;
         double bestColorScore = 0;
 
         for (int i = 4; i < MAP_COLORS.length; i++) {
             int[] color = MAP_COLORS[i];
-            double score = Configs.configs.fastColorMatch ? FastMatch.colorDelta(r, g, b, a, color[0], color[1], color[2], 255) : CIEMatch.colorDelta(r, g, b, a, color[0], color[1], color[2], 255);
+            double score = fast ? FastMatch.colorDelta(r, g, b, a, color[0], color[1], color[2], 255) : CIEMatch.colorDelta(r, g, b, a, color[0], color[1], color[2], 255);
 
             if (i == 4 || score < bestColorScore) {
                 bestColor = i;

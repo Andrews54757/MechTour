@@ -43,6 +43,8 @@ public class WaypointIcons {
         String name;
         String file;
         boolean colored = true;
+        boolean matchSlow = false;
+
         private BitMapImage image;
 
         public void prepareImage() {
@@ -50,6 +52,7 @@ public class WaypointIcons {
             if (!getColored()) {
                 image.setColor(83,134,184);
             }
+            image.setMatchSlow(matchSlow);
             image.bake();
         }
         public String getName() {
