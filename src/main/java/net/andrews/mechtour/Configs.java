@@ -68,6 +68,19 @@ public class Configs {
 
     }
 
+    public static Object getConfig(String name) {
+        try {
+            Field field = configs.getClass().getDeclaredField(name);
+            if (java.lang.reflect.Modifier.isStatic(field.getModifiers()))
+                return null;
+            field.setAccessible(true);
+            return field.get(configs);
+        } catch (Exception e) {
+            System.out.println(e);
+            return null;
+        }        
+    }
+
     public static void loadFromFile() {
         String str = Utils.readTextFile(FabricLoader.getInstance().getConfigDir().resolve("mechtour/config.json"));
 

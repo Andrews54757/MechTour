@@ -96,7 +96,7 @@ public class MechTourMod {
                         .then(CommandManager.argument("name", StringArgumentType.word())
                                 .suggests((c, b) -> CommandSource.suggestMatching(Configs.getFields(), b))
                                 .then(CommandManager.argument("value", StringArgumentType.greedyString())
-                                        .executes(MechTourMod::setConfig))))
+                                        .executes(MechTourMod::setConfig)).executes(MechTourMod::getConfig)))
 
         );
 
@@ -210,6 +210,24 @@ public class MechTourMod {
             } else {
                 sendFeedback(ctx, "Failed to set " + name + " to " + value, true);
             }
+
+        } catch (Exception e) {
+            sendFeedback(ctx, "An error has occured: " + e, true);
+
+        }
+        return 1;
+    }
+
+    private static int getConfig(CommandContext<ServerCommandSource> ctx) {
+        try {
+
+            String name = StringArgumentType.getString(ctx, "name");
+
+        
+            sendFeedback(ctx, name + " is set to " + Configs.getConfig(name), true);
+          
+               
+            
 
         } catch (Exception e) {
             sendFeedback(ctx, "An error has occured: " + e, true);
