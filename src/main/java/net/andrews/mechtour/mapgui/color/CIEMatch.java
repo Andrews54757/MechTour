@@ -3,7 +3,7 @@ package net.andrews.mechtour.mapgui.color;
 public class CIEMatch {
     private static double epsilon = Math.pow(6, 3) / Math.pow(29, 3);
     private static double kappa = Math.pow(29, 3) / Math.pow(3, 3);
-
+    private static double const_a = Math.pow(25, 7);
 
     // https://github.com/jonathantneal/convert-colors/blob/master/src/lab-xyz.js
     private static double[] rgb2lab(int r, int g, int b) {
@@ -59,7 +59,7 @@ public class CIEMatch {
         double cBar = (c1 + c2) / 2;
 
         double cBarPow7 = Math.pow(cBar, 7);
-        double cCoeff = Math.sqrt(cBarPow7 / (cBarPow7 + Math.pow(25, 7)));
+        double cCoeff = Math.sqrt(cBarPow7 / (cBarPow7 + const_a));
         double a1Prime = a1 + a1 / 2 * (1 - cCoeff);
         double a2Prime = a2 + a2 / 2 * (1 - cCoeff);
 
