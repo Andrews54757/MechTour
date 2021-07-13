@@ -116,7 +116,7 @@ public class BitMapImage {
             if (a <= alphaCutoff) {
                 mapImage[mapOffset++] = 0;
             } else {
-                mapImage[mapOffset++] = ColorMatcher.getBestColor(r, g, b, a, Configs.configs.fastColorMatch && !matchSlow);
+                mapImage[mapOffset++] = ColorMatcher.getBestColor(r, g, b, a, !matchSlow);
             }
         }
         toProcess = null;

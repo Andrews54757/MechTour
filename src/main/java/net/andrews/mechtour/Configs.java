@@ -22,7 +22,7 @@ public class Configs {
     public boolean disableGuideItem = false;
     public boolean disableGuideHoldMessage = false;
     public boolean broadcastTeleportsToOps = true;
-    public boolean fastColorMatch = true;
+  //  public boolean fastColorMatch = true;
     
     public String mapUrlBase = "http://mechanists.org/maps";
     public String aboutText = "Welcome to Mechanists!\n\n" + "We are a Technical Minecraft server currently on 1.16.5\n\n"
