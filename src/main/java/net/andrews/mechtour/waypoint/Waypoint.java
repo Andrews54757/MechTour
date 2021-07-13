@@ -9,13 +9,12 @@ import java.awt.Font;
 
 public class Waypoint {
 
+    String name;
+    String dimension;
+    String icon;
     int x;
     int y;
     int z;
-    String icon;
-    String name;
-    String dimension;
-
     int r = 83;
     int g = 134;
     int b = 184;
