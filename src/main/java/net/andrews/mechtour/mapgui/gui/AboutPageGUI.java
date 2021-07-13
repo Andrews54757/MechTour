@@ -33,7 +33,7 @@ public class AboutPageGUI extends MapGuiBase {
 
     @Override
     public void render(MapGuiHolder holder) {
-       // MapRenderer.fill(holder, (byte) 0);
+        // MapRenderer.fill(holder, (byte) 0);
         // banner = new BitMapImage("banner.png").scaledDimensions(-1,
         // 100).setAlphaCutoff(200).bake();
 
@@ -43,12 +43,11 @@ public class AboutPageGUI extends MapGuiBase {
         MapRenderer.fill(holder, 10, 90, holder.getPanelPixelWidth() - 20, holder.getPanelPixelHeight() - 100,
                 (byte) 12);
 
-
-
-        MapRenderer.drawText(holder, Resources.about_title, holder.getPanelPixelWidth() / 2 - Resources.about_title.getWidth() / 2, 0,
-        holder.getPlayer().getServerWorld().getRegistryKey().getValue().equals(DimensionType.OVERWORLD_ID) ? ((byte) 116) : ((byte) 58));
-
-       
+        MapRenderer.drawText(holder, Resources.about_title,
+                holder.getPanelPixelWidth() / 2 - Resources.about_title.getWidth() / 2, 0,
+                holder.getPlayer().getServerWorld().getRegistryKey().getValue().equals(DimensionType.OVERWORLD_ID)
+                        ? ((byte) 116)
+                        : ((byte) 58));
 
         MapRenderer.drawText(holder, Configs.aboutTextCache, 20, 100, (byte) 40);
 

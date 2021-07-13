@@ -13,13 +13,13 @@ import net.minecraft.server.network.ServerPlayNetworkHandler;
 @Mixin(ServerPlayNetworkHandler.class)
 public class MixinServerPlayNetworkHandler {
     
-    @Inject(method = "onUpdateSelectedSlot",at = @At("HEAD"))
+    @Inject(method = "onUpdateSelectedSlot",at = @At("RETURN"))
     private void onUpdateSelectedSlotInject(UpdateSelectedSlotC2SPacket packet, CallbackInfo ci) {
 
         MechTourMod.onUpdateSelectedSlot((ServerPlayNetworkHandler) (Object) this, packet.getSelectedSlot());
     }
 
-    @Inject(method = "onHandSwing", at = @At("HEAD"))
+    @Inject(method = "onHandSwing", at = @At("RETURN"))
     private void onHandSwingInject(HandSwingC2SPacket packet, CallbackInfo ci) {
         MechTourMod.onSwingClick(((ServerPlayNetworkHandler) (Object)this).player);
     }
