@@ -958,7 +958,7 @@ public class MechTourMod {
         sendActionBarMessage(player, "Teleporting to " + waypoint.getName());
 
         double x = (double) waypoint.getX() + 0.5;
-        double y = (double) waypoint.getY() + 0.5;
+        double y = (double) waypoint.getY();
         double z = (double) waypoint.getZ() + 0.5;
         float pitch = player.getPitch(1);
         float yaw = player.getYaw(1);
