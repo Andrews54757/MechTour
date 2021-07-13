@@ -43,6 +43,7 @@ public class WaypointIcons {
         String file;
         boolean colored = true;
         boolean matchSlow = false;
+        boolean isFuzzy = false;
 
         private HashMap<Integer, BitMapImage> images = new HashMap<>();
 
@@ -59,7 +60,7 @@ public class WaypointIcons {
 
             BitMapImage image = images.get(index);
             if (image == null) {
-                image = new BitMapImage("waypoint_icons/" + file).scaledDimensions(-1, 80).setAlphaCutoff(20);
+                image = new BitMapImage("waypoint_icons/" + file).scaledDimensions(-1, 80).setAlphaCutoff(isFuzzy() ? 200 : 20);
                 if (!getColored()) {
                     image.setColor(r,g,b);
                 }
@@ -79,6 +80,9 @@ public class WaypointIcons {
             return colored;
         }
 
+        public boolean isFuzzy() {
+            return isFuzzy;
+        }
         public void setColored(boolean colored) {
             this.colored = colored;
         }
@@ -87,6 +91,10 @@ public class WaypointIcons {
         }
         public void setName(String name) {
             this.name = name;
+        }
+
+        public void setFuzzy(boolean isFuzzy) {
+            this.isFuzzy = isFuzzy;
         }
     }
 
