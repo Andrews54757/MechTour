@@ -3,6 +3,7 @@ package net.andrews.mechtour.mapgui.gui;
 import net.andrews.mechtour.Configs;
 import net.andrews.mechtour.mapgui.MapGuiHolder;
 import net.andrews.mechtour.mapgui.MapRenderer;
+import net.minecraft.world.dimension.DimensionType;
 
 public class AboutPageGUI extends MapGuiBase {
 
@@ -42,8 +43,10 @@ public class AboutPageGUI extends MapGuiBase {
         MapRenderer.fill(holder, 10, 90, holder.getPanelPixelWidth() - 20, holder.getPanelPixelHeight() - 100,
                 (byte) 12);
 
+
+
         MapRenderer.drawText(holder, Resources.about_title, holder.getPanelPixelWidth() / 2 - Resources.about_title.getWidth() / 2, 0,
-                (byte) 116);
+        holder.getPlayer().getServerWorld().getRegistryKey().getValue().equals(DimensionType.OVERWORLD_ID) ? ((byte) 116) : ((byte) 58));
 
        
 

@@ -54,6 +54,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.util.thread.ThreadExecutor;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
@@ -887,8 +888,14 @@ public class MechTourMod {
             return;
         }
     }
-
     private static void teleportPlayerToPlayer(ServerPlayerEntity player, ServerPlayerEntity target) {
+        ((ThreadExecutor)player.getServer()).execute(()->{
+            teleportPlayerToPlayerInternal(player, target);
+        });
+       
+    }
+    
+    private static void teleportPlayerToPlayerInternal(ServerPlayerEntity player, ServerPlayerEntity target) {
         Vec3d pos = target.getPos();
         double x = pos.getX();
         double y = pos.getY();
@@ -1003,6 +1010,14 @@ public class MechTourMod {
         }
 
         sendActionBarMessage(player, "Teleporting to " + waypoint.getName());
+        
+        ((ThreadExecutor)player.getServer()).execute(()->{
+            teleportToWaypointInternal(player, waypoint, broadcast);
+        });
+    }
+
+    public static void teleportToWaypointInternal(ServerPlayerEntity player, Waypoint waypoint, boolean broadcast) {
+
 
         double x = (double) waypoint.getX() + 0.5;
         double y = (double) waypoint.getY();
@@ -1019,6 +1034,7 @@ public class MechTourMod {
             player.wakeUp(true, true);
         }
 
+      
         if (world == player.getServerWorld()) {
             Set<PlayerPositionLookS2CPacket.Flag> set = EnumSet.noneOf(PlayerPositionLookS2CPacket.Flag.class);
             player.networkHandler.teleportRequest(x, y, z, yaw, pitch, set);
