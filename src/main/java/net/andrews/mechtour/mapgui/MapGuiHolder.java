@@ -203,11 +203,11 @@ public class MapGuiHolder {
             closeGui();
         }
 
-        forceClear();
+        MapRenderer.clear(this);
 
         this.mapGui = gui;
+        gui.setReRenderFlag(true);
         gui.onOpen(this);
-
     }
 
     public void forceClear() {
@@ -216,6 +216,9 @@ public class MapGuiHolder {
             map.forceClear();
         }
 
+        if (this.mapGui != null) {
+            this.mapGui.setReRenderFlag(true);
+        }
     }
 
     public void closeGui() {
