@@ -210,10 +210,10 @@ public class MapGuiHolder {
         gui.onOpen(this);
     }
 
-    public void forceClear() {
+    public void forceSend() {
 
         for (MapGuiMap map : maps) {
-            map.forceClear();
+            map.forceSend();
         }
 
         if (this.mapGui != null) {
@@ -297,7 +297,7 @@ public class MapGuiHolder {
             }
         }
 
-        forceClear();
+        forceSend();
     }
 
     public void closePanel() {

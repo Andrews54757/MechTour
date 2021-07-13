@@ -100,13 +100,7 @@ public class MapGuiMap {
         changedBounds.set(0, 0, 0, 0);
     }
 
-    void forceClear() {
-        for (int i = 0; i < colors.length; i++) {
-            colors[i] = 0;
-        }
-        for (int i = 0; i < prevColors.length; i++) {
-            prevColors[i] = 0;
-        }
+    void forceSend() {
         Utils.sendPacket(player, new MapUpdateS2CPacket(code, MAP_SCALE, false, false, MAP_ICONS, colors,
                 0, 0, MAP_WIDTH, MAP_HEIGHT));
         changedBounds.set(0, 0, 0, 0);
