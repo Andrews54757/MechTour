@@ -209,6 +209,10 @@ public class MechTourMod {
     }
     private static int openGuiCommand(CommandContext<ServerCommandSource> ctx) {
         try {
+            if (Configs.configs.vanillaMode) {
+                sendFeedback(ctx, "Guide gui is disabled!", true);
+                return 1;
+            }
             ServerPlayerEntity player = ctx.getSource().getPlayer();
             if (player != null) {
                 openGuideGUI(player);
