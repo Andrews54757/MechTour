@@ -462,7 +462,7 @@ public class MechTourMod {
 
             waypointManager.removeWaypoint(waypoint);
             sendFeedback(ctx,
-                    "There is no waypoint with name " + waypoint.getName() + " in dimension " + waypoint.getDimension(),
+                    "Removed waypoint with name " + waypoint.getName() + " in dimension " + waypoint.getDimension(),
                     true);
 
         } catch (Exception e) {
