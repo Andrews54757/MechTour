@@ -165,6 +165,9 @@ public class MechTourMod {
                                     return serverCommandSource.hasPermissionLevel(2);
                                 }).then(CommandManager.argument("newname", StringArgumentType.greedyString())
                                         .executes(MechTourMod::modifyName)))
+                                        .then(CommandManager.literal("modifyColor").requires((serverCommandSource) -> {
+                                            return serverCommandSource.hasPermissionLevel(2);
+                                        }).then(CommandManager.argument("r", IntegerArgumentType.integer(0, 255)).then(CommandManager.argument("g", IntegerArgumentType.integer(0, 255)).then(CommandManager.argument("b", IntegerArgumentType.integer(0, 255)).executes(MechTourMod::modifyColor)))))
                                 .then(CommandManager.literal("move").requires((serverCommandSource) -> {
                                             return serverCommandSource.hasPermissionLevel(2);
                                         }).then(CommandManager.argument("newindex", IntegerArgumentType.integer())
@@ -580,6 +583,49 @@ public class MechTourMod {
             waypointManager.waypointsUpdated();
             sendFeedback(ctx, "Changed name of waypoint " + waypoint.getName() + " in dimension "
                     + waypoint.getDimension() + " to " + newname + "!", true);
+        } catch (Exception e) {
+            sendFeedback(ctx, "An error has occured: " + e, true);
+        }
+
+        return 1;
+    }
+
+    private static int modifyColor(CommandContext<ServerCommandSource> ctx) {
+
+        try {
+            if (Configs.configs.disableWaypoints) {
+                sendFeedback(ctx, "Waypoints are disabled!");
+                return 1;
+            }
+            if (Configs.configs.disableWaypointEdits) {
+                sendFeedback(ctx, "Waypoint editing is disabled!");
+                return 1;
+            }
+
+            MapGuiHolder holder = guiHolders.get(ctx.getSource().getPlayer());
+
+            if (holder == null || !holder.isPanelOpen() || holder.getGui() == null
+                    || !(holder.getGui() instanceof WaypointsMenuGui)) {
+                sendFeedback(ctx, "Waypoint gui is not open!", true);
+                return 1;
+            }
+
+            WaypointsMenuGui gui = (WaypointsMenuGui) holder.getGui();
+
+            Waypoint waypoint = gui.getWaypoint();
+
+            if (waypoint == null) {
+                sendFeedback(ctx, "You need to point at the waypoint!", true);
+                return 1;
+            }
+
+            int r = IntegerArgumentType.getInteger(ctx, "r");
+            int g = IntegerArgumentType.getInteger(ctx, "g");
+            int b = IntegerArgumentType.getInteger(ctx, "b");
+            waypoint.setColor(r, g, b);
+            waypointManager.waypointsUpdated();
+            sendFeedback(ctx, "Changed color of waypoint " + waypoint.getName() + " in dimension "
+                    + waypoint.getDimension() + " to " + r + ", " + g + ", " + b+ "!", true);
         } catch (Exception e) {
             sendFeedback(ctx, "An error has occured: " + e, true);
         }

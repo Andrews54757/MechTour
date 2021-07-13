@@ -1,7 +1,9 @@
 package net.andrews.mechtour.waypoint;
 
 import net.andrews.mechtour.Utils;
+import net.andrews.mechtour.mapgui.BitMapImage;
 import net.andrews.mechtour.mapgui.MapText;
+import net.andrews.mechtour.waypoint.WaypointIcons.Icon;
 
 import java.awt.Font;
 
@@ -15,6 +17,9 @@ public class Waypoint {
     String name;
     String dimension;
 
+    int r = 83;
+    int g = 134;
+    int b = 184;
 
     transient MapText cachedText = null;
 
@@ -44,10 +49,14 @@ public class Waypoint {
         return name;
     }
 
-    public WaypointIcons.Icon getIcon() {
-       
-        return WaypointIcons.getIconByName(icon);
+    public BitMapImage getIcon() {
+        Icon ic = WaypointIcons.getIconByName(icon);
+        if (ic != null) {
+            ic.getImage(r,g,b);
+        }
+        return null;
     }
+
     public MapText getTextIcon() {
         if (cachedText == null) {
             cachedText = new MapText(Utils.wordWrap(this.getName(), 18), new Font("Arial", Font.PLAIN, this.getName().length() > 14 ? 20 : 25));
@@ -103,6 +112,12 @@ public class Waypoint {
     }
     public void setIconName(String iconName) {
         this.icon = iconName;
+    }
+
+    public void setColor(int r, int g, int b) {
+        this.r = r;
+        this.g = g;
+        this.b = b;
     }
 
 

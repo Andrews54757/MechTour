@@ -1,6 +1,7 @@
 package net.andrews.mechtour.mapgui.gui;
 
 import net.andrews.mechtour.MechTourMod;
+import net.andrews.mechtour.mapgui.BitMapImage;
 import net.andrews.mechtour.mapgui.MapGuiHolder;
 import net.andrews.mechtour.mapgui.MapRenderer;
 import net.andrews.mechtour.mapgui.MapText;
@@ -143,7 +144,7 @@ public class WaypointsMenuGui extends MapGuiBase {
                 break;
             Waypoint waypoint = waypoints.get(i + startIndex);
             MapText name = waypoint.getTextIcon();
-            WaypointIcons.Icon icon = waypoint.getIcon();
+            BitMapImage icon = waypoint.getIcon();
 
             int row = i / columns;
             int column = i % columns;
@@ -154,7 +155,7 @@ public class WaypointsMenuGui extends MapGuiBase {
                     currentBox == i ? (byte) 40 : (byte) 41);
 
             if (icon != null)
-                MapRenderer.drawImage(holder, icon.getImage(), x + bw / 2 - icon.getImage().getWidth() / 2, y + 3);
+                MapRenderer.drawImage(holder, icon, x + bw / 2 - icon.getWidth() / 2, y + 3);
 
             MapRenderer.drawText(holder, name, x + bw / 2 - name.getWidth() / 2, y + bh - name.getHeight() - 5,
                     (byte) 206);

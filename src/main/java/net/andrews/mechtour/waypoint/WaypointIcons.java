@@ -10,7 +10,7 @@ import net.fabricmc.loader.api.FabricLoader;
 
 public class WaypointIcons {
 
-    private static HashMap<String, Icon> icons = new HashMap<>();;
+    private static HashMap<String, Icon> icons = new HashMap<>();
 
     static {
         load();
@@ -28,7 +28,6 @@ public class WaypointIcons {
        icons.clear();
        for (int i = 0; i < ic.length; i++) {
            icons.put(ic[i].getName(), ic[i]);
-           ic[i].prepareImage();
        }
     }
 
@@ -45,21 +44,30 @@ public class WaypointIcons {
         boolean colored = true;
         boolean matchSlow = false;
 
-        private BitMapImage image;
+        private HashMap<Integer, BitMapImage> images = new HashMap<>();
 
-        public void prepareImage() {
-            image = new BitMapImage("waypoint_icons/" + file).scaledDimensions(-1, 80).setAlphaCutoff(20);
-            if (!getColored()) {
-                image.setColor(83,134,184);
-            }
-            image.setMatchSlow(matchSlow);
-            image.bake();
-        }
         public String getName() {
             return name;
         }
 
-        public BitMapImage getImage() {
+        public BitMapImage getImage(int r, int g, int b) {
+
+            int index = 0;
+            if (!colored) {
+                index = r << 16 | g << 8 | b;
+            }
+
+            BitMapImage image = images.get(index);
+            if (image == null) {
+                image = new BitMapImage("waypoint_icons/" + file).scaledDimensions(-1, 80).setAlphaCutoff(20);
+                if (!getColored()) {
+                    image.setColor(r,g,b);
+                }
+                image.setMatchSlow(matchSlow);
+                image.bake();
+
+                images.put(index, image);
+            }
             return image;
         }
 
