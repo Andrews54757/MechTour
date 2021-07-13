@@ -46,9 +46,6 @@ public class MapGuiMap {
         this.mapItemTag = this.mapItem.getOrCreateTag();
         this.mapItemTag.putInt("map", code);
         this.mapItem.setCount(1);
-
-        this.forceSend();
-
     }
 
     public boolean setPixel(int i, int j, byte color) {
@@ -103,7 +100,13 @@ public class MapGuiMap {
         changedBounds.set(0, 0, 0, 0);
     }
 
-    void forceSend() {
+    void forceClear() {
+        for (int i = 0; i < colors.length; i++) {
+            colors[i] = 0;
+        }
+        for (int i = 0; i < prevColors.length; i++) {
+            prevColors[i] = 0;
+        }
         Utils.sendPacket(player, new MapUpdateS2CPacket(code, MAP_SCALE, false, false, MAP_ICONS, colors,
                 0, 0, MAP_WIDTH, MAP_HEIGHT));
         changedBounds.set(0, 0, 0, 0);

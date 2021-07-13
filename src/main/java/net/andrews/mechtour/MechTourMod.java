@@ -195,6 +195,9 @@ public class MechTourMod {
                                                         .getRegistryKey().getValue().getPath()),
                                                 b))
                                 .executes(MechTourMod::tpWaypoint)))));
+
+        dispatcher.register(CommandManager.literal("opengui").executes(MechTourMod::openGuiCommand));
+
     }
 
     private static void sendFeedback(CommandContext<ServerCommandSource> ctx, String str, boolean ops) {
@@ -203,6 +206,18 @@ public class MechTourMod {
 
     private static void sendFeedback(CommandContext<ServerCommandSource> ctx, String str) {
         sendFeedback(ctx, str, false);
+    }
+    private static int openGuiCommand(CommandContext<ServerCommandSource> ctx) {
+        try {
+            ServerPlayerEntity player = ctx.getSource().getPlayer();
+            if (player != null) {
+                openGuideGUI(player);
+            }
+        } catch (Exception e) {
+            sendFeedback(ctx, "An error has occured: " + e, true);
+
+        }
+        return 1;
     }
 
     private static int setConfig(CommandContext<ServerCommandSource> ctx) {
@@ -888,13 +903,14 @@ public class MechTourMod {
             return;
         }
     }
+
     private static void teleportPlayerToPlayer(ServerPlayerEntity player, ServerPlayerEntity target) {
-        ((ThreadExecutor)player.getServer()).execute(()->{
+        ((ThreadExecutor) player.getServer()).execute(() -> {
             teleportPlayerToPlayerInternal(player, target);
         });
-       
+
     }
-    
+
     private static void teleportPlayerToPlayerInternal(ServerPlayerEntity player, ServerPlayerEntity target) {
         Vec3d pos = target.getPos();
         double x = pos.getX();
@@ -1010,14 +1026,13 @@ public class MechTourMod {
         }
 
         sendActionBarMessage(player, "Teleporting to " + waypoint.getName());
-        
-        ((ThreadExecutor)player.getServer()).execute(()->{
+
+        ((ThreadExecutor) player.getServer()).execute(() -> {
             teleportToWaypointInternal(player, waypoint, broadcast);
         });
     }
 
     public static void teleportToWaypointInternal(ServerPlayerEntity player, Waypoint waypoint, boolean broadcast) {
-
 
         double x = (double) waypoint.getX() + 0.5;
         double y = (double) waypoint.getY();
@@ -1034,7 +1049,6 @@ public class MechTourMod {
             player.wakeUp(true, true);
         }
 
-      
         if (world == player.getServerWorld()) {
             Set<PlayerPositionLookS2CPacket.Flag> set = EnumSet.noneOf(PlayerPositionLookS2CPacket.Flag.class);
             player.networkHandler.teleportRequest(x, y, z, yaw, pitch, set);

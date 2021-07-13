@@ -203,10 +203,18 @@ public class MapGuiHolder {
             closeGui();
         }
 
-        MapRenderer.fill(this, (byte) 0);
+        forceClear();
 
         this.mapGui = gui;
         gui.onOpen(this);
+
+    }
+
+    public void forceClear() {
+
+        for (MapGuiMap map : maps) {
+            map.forceClear();
+        }
 
     }
 
@@ -285,6 +293,8 @@ public class MapGuiHolder {
                 index++;
             }
         }
+
+        forceClear();
     }
 
     public void closePanel() {
