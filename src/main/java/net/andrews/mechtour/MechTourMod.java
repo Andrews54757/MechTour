@@ -92,11 +92,10 @@ public class MechTourMod {
                                 .executes(MechTourMod::giveGuides))
 
                         .executes(MechTourMod::giveGuide)))
-                .then(CommandManager.literal("config")
-                        .then(CommandManager.argument("name", StringArgumentType.word())
-                                .suggests((c, b) -> CommandSource.suggestMatching(Configs.getFields(), b))
-                                .then(CommandManager.argument("value", StringArgumentType.greedyString())
-                                        .executes(MechTourMod::setConfig)).executes(MechTourMod::getConfig)))
+                .then(CommandManager.literal("config").then(CommandManager.argument("name", StringArgumentType.word())
+                        .suggests((c, b) -> CommandSource.suggestMatching(Configs.getFields(), b)).then(CommandManager
+                                .argument("value", StringArgumentType.greedyString()).executes(MechTourMod::setConfig))
+                        .executes(MechTourMod::getConfig)))
 
         );
 
@@ -165,13 +164,16 @@ public class MechTourMod {
                                     return serverCommandSource.hasPermissionLevel(2);
                                 }).then(CommandManager.argument("newname", StringArgumentType.greedyString())
                                         .executes(MechTourMod::modifyName)))
-                                        .then(CommandManager.literal("modifyColor").requires((serverCommandSource) -> {
-                                            return serverCommandSource.hasPermissionLevel(2);
-                                        }).then(CommandManager.argument("r", IntegerArgumentType.integer(0, 255)).then(CommandManager.argument("g", IntegerArgumentType.integer(0, 255)).then(CommandManager.argument("b", IntegerArgumentType.integer(0, 255)).executes(MechTourMod::modifyColor)))))
+                                .then(CommandManager.literal("modifyColor").requires((serverCommandSource) -> {
+                                    return serverCommandSource.hasPermissionLevel(2);
+                                }).then(CommandManager.argument("r", IntegerArgumentType.integer(0, 255))
+                                        .then(CommandManager.argument("g", IntegerArgumentType.integer(0, 255))
+                                                .then(CommandManager.argument("b", IntegerArgumentType.integer(0, 255))
+                                                        .executes(MechTourMod::modifyColor)))))
                                 .then(CommandManager.literal("move").requires((serverCommandSource) -> {
-                                            return serverCommandSource.hasPermissionLevel(2);
-                                        }).then(CommandManager.argument("newindex", IntegerArgumentType.integer())
-                                                .executes(MechTourMod::moveCommand)))
+                                    return serverCommandSource.hasPermissionLevel(2);
+                                }).then(CommandManager.argument("newindex", IntegerArgumentType.integer())
+                                        .executes(MechTourMod::moveCommand)))
                                 .then(CommandManager.literal("reload").requires((serverCommandSource) -> {
                                     return serverCommandSource.hasPermissionLevel(2);
                                 }).then(CommandManager.literal("icons").executes(MechTourMod::reloadIconsCommand))
@@ -226,11 +228,7 @@ public class MechTourMod {
 
             String name = StringArgumentType.getString(ctx, "name");
 
-        
             sendFeedback(ctx, name + " is set to:\n" + Configs.getConfig(name), true);
-          
-               
-            
 
         } catch (Exception e) {
             sendFeedback(ctx, "An error has occured: " + e, true);
@@ -462,7 +460,9 @@ public class MechTourMod {
             Waypoint waypoint = gui.getWaypoint();
 
             waypointManager.removeWaypoint(waypoint);
-            sendFeedback(ctx, "There is no waypoint with name " + waypoint.getName() + " in dimension " + waypoint.getDimension(), true);
+            sendFeedback(ctx,
+                    "There is no waypoint with name " + waypoint.getName() + " in dimension " + waypoint.getDimension(),
+                    true);
 
         } catch (Exception e) {
             sendFeedback(ctx, "An error has occured: " + e, true);
@@ -509,6 +509,7 @@ public class MechTourMod {
 
         return 1;
     }
+
     private static int modifyIcon(CommandContext<ServerCommandSource> ctx) {
 
         try {
@@ -625,7 +626,7 @@ public class MechTourMod {
             waypoint.setColor(r, g, b);
             waypointManager.waypointsUpdated();
             sendFeedback(ctx, "Changed color of waypoint " + waypoint.getName() + " in dimension "
-                    + waypoint.getDimension() + " to " + r + ", " + g + ", " + b+ "!", true);
+                    + waypoint.getDimension() + " to " + r + ", " + g + ", " + b + "!", true);
         } catch (Exception e) {
             sendFeedback(ctx, "An error has occured: " + e, true);
         }
@@ -816,7 +817,7 @@ public class MechTourMod {
         MapGuiHolder holder = guiHolders.get(player);
         if (holder != null) {
             if (holder.onUpdateSelectedSlot(serverPlayNetworkHandler, selectedSlot)) {
-                
+
                 return;
             }
         }
