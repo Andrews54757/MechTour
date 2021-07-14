@@ -144,21 +144,23 @@ public class WaypointManager {
     public void moveWaypoint(Waypoint waypoint, int newpos) {
         waypoints.remove(waypoint);
         int index = 0;
+        int lastIndex = 0;
         Iterator<Waypoint> it = waypoints.iterator();
         while (it.hasNext()) {
             Waypoint wp = it.next();
-          
+            
             if (index == newpos) {
-                waypoints.add(newpos, waypoint);
+                waypoints.add(lastIndex, waypoint);
                 waypointsUpdated();
                 return;
             }
+            lastIndex++;
             if (wp.dimension.equalsIgnoreCase(waypoint.getDimension())) {
                 index++;
             }
 
         }
-        waypoints.add(index, waypoint);
+        waypoints.add(lastIndex, waypoint);
         waypointsUpdated();
     }
 
