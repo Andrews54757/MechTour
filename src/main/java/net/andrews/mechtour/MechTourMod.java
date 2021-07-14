@@ -455,7 +455,7 @@ public class MechTourMod {
             if (count == 0) {
                 sendFeedback(ctx, "There is no waypoint with name " + name + " in dimension " + dimension, true);
             } else {
-                sendFeedback(ctx, "Removed " + count + " waypoint", true);
+                sendFeedback(ctx, "Removed " + count + " waypoints with the name " + name + " in dimension " + dimension, true);
             }
         } catch (Exception e) {
             sendFeedback(ctx, "An error has occured: " + e, true);
