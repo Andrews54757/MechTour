@@ -209,7 +209,7 @@ public class MechTourMod {
     }
     private static int openGuiCommand(CommandContext<ServerCommandSource> ctx) {
         try {
-            if (Configs.configs.vanillaMode) {
+            if (Configs.configs.disableGui) {
                 sendFeedback(ctx, "Guide gui is disabled!", true);
                 return 1;
             }
@@ -844,7 +844,7 @@ public class MechTourMod {
 
         ItemStack stack = player.inventory.getStack(selectedSlot);
         if (isGuideItem(stack) && !Configs.configs.disableGuideItem && !Configs.configs.disableGuideHoldMessage) {
-            if (Configs.configs.vanillaMode) {
+            if (Configs.configs.disableGui) {
                 if (!Configs.configs.disableWaypoints && !Configs.configs.disableTourTeleport)
                     sendActionBarMessage(player, "Use to teleport to tour");
             } else {
@@ -891,7 +891,7 @@ public class MechTourMod {
 
         if (MechTourMod.isHoldingGuide(player) && !Configs.configs.disableGuideItem) {
 
-            if (Configs.configs.vanillaMode) {
+            if (Configs.configs.disableGui) {
                 teleportToGuide(player);
             } else {
                 MechTourMod.openGuideGUI(player);
@@ -1021,11 +1021,6 @@ public class MechTourMod {
 
         if (Configs.configs.disableWaypointsTeleport) {
             sendActionBarMessage(player, "Waypoint teleports are disabled!");
-            return;
-        }
-
-        if (Configs.configs.vanillaMode) {
-            sendActionBarMessage(player, "Waypoint teleport is disabled!");
             return;
         }
 
