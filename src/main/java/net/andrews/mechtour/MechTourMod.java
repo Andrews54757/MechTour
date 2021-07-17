@@ -832,7 +832,7 @@ public class MechTourMod {
                                 sendToOps(player.getServer(), "Teleported " + player.getDisplayName().asString() + " to guide "
                                 + guidePlayer.getDisplayName().asString());
 
-                                teleportPlayerToPlayer(player, guidePlayer);
+                                teleportPlayerToPlayer(player, guidePlayer, info.pos);
                             } else {
                                 sendActionBarMessage(player, "There is no tour guide to teleport to!");
                             }
@@ -945,15 +945,14 @@ public class MechTourMod {
         }
     }
 
-    private static void teleportPlayerToPlayer(ServerPlayerEntity player, ServerPlayerEntity target) {
+    private static void teleportPlayerToPlayer(ServerPlayerEntity player, ServerPlayerEntity target, Vec3d pos) {
         ((ThreadExecutor) player.getServer()).execute(() -> {
-            teleportPlayerToPlayerInternal(player, target);
+            teleportPlayerToPlayerInternal(player, target, pos);
         });
 
     }
 
-    private static void teleportPlayerToPlayerInternal(ServerPlayerEntity player, ServerPlayerEntity target) {
-        Vec3d pos = target.getPos();
+    private static void teleportPlayerToPlayerInternal(ServerPlayerEntity player, ServerPlayerEntity target, Vec3d pos) {
         double x = pos.getX();
         double y = pos.getY();
         double z = pos.getZ();
@@ -1012,6 +1011,7 @@ public class MechTourMod {
 
         info.teleportTimeout = Configs.configs.teleportTimeout;
 
+        info.pos = guidePlayer.getPos();
         sendActionBarMessage(player, "Teleporting to " + guidePlayer.getName().asString() + " in "
                 + (Configs.configs.teleportTimeout / 20) + " sec");
         /*
