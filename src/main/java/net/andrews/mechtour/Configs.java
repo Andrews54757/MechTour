@@ -53,10 +53,11 @@ public class Configs {
             if (java.lang.reflect.Modifier.isStatic(field.getModifiers()))
                 return false;
             field.setAccessible(true);
-            if (field.getType().getName().equals("boolean")) {
+            String tname = field.getType().getName();
+            if (tname.equals("boolean")) {
                 value = Boolean.valueOf((String) value);
             } else
-            if (field.getType().getName().equals("integer")) {
+            if (tname.equals("int")) {
                 value = Integer.valueOf((String) value);
             }
             field.set(configs, value);
