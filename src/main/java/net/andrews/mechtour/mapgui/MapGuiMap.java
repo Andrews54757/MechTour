@@ -68,7 +68,7 @@ public class MapGuiMap {
     }
 
     void showFrame() {
-        Utils.sendPacket(player, new EntitySpawnS2CPacket(this.mapEntity));
+        Utils.sendPacket(player, this.mapEntity.createSpawnPacket());
         if (!mapEntity.getDataTracker().isEmpty()) {
             Utils.sendPacket(player, new EntityTrackerUpdateS2CPacket(this.mapEntity.getEntityId(),
                     this.mapEntity.getDataTracker(), true));
