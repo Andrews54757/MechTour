@@ -55,6 +55,9 @@ public class Configs {
             field.setAccessible(true);
             if (field.getType().getName().equals("boolean")) {
                 value = Boolean.valueOf((String) value);
+            } else
+            if (field.getType().getName().equals("integer")) {
+                value = Integer.valueOf((String) value);
             }
             field.set(configs, value);
             setupCaches();
