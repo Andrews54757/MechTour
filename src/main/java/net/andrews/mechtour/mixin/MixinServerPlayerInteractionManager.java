@@ -27,7 +27,8 @@ public class MixinServerPlayerInteractionManager {
     */
     @Inject(method = "interactItem", at = @At("HEAD"), cancellable = true)
     private void interactItemIntercept(ServerPlayerEntity player, World world, ItemStack stack, Hand hand, CallbackInfoReturnable<ActionResult> ci) {
-       
-        MechTourMod.onInteractClick(player, ci);
+        if (hand == Hand.MAIN_HAND) {
+            MechTourMod.onInteractClick(player, ci);
+        }
     }
 }

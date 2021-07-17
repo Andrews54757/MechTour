@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -66,6 +67,8 @@ public class MechTourMod {
 
     private static int guideCooldown = 40;
     private static HashMap<ServerPlayerEntity, MapGuiHolder> guiHolders = new HashMap<>();
+
+    private static HashMap<String, PlayerInfo> playerInfos = new HashMap<>();
 
     public static WaypointManager waypointManager;
 
@@ -207,6 +210,7 @@ public class MechTourMod {
     private static void sendFeedback(CommandContext<ServerCommandSource> ctx, String str) {
         sendFeedback(ctx, str, false);
     }
+
     private static int openGuiCommand(CommandContext<ServerCommandSource> ctx) {
         try {
             if (Configs.configs.disableGui) {
@@ -455,7 +459,8 @@ public class MechTourMod {
             if (count == 0) {
                 sendFeedback(ctx, "There is no waypoint with name " + name + " in dimension " + dimension, true);
             } else {
-                sendFeedback(ctx, "Removed " + count + " waypoints with the name " + name + " in dimension " + dimension, true);
+                sendFeedback(ctx,
+                        "Removed " + count + " waypoints with the name " + name + " in dimension " + dimension, true);
             }
         } catch (Exception e) {
             sendFeedback(ctx, "An error has occured: " + e, true);
@@ -805,6 +810,38 @@ public class MechTourMod {
                 gui.tick();
             }
         }
+
+        Iterator<PlayerInfo> infos = playerInfos.values().iterator();
+        while (infos.hasNext()) {
+            PlayerInfo info = infos.next();
+
+            if (info.player.isDisconnected()) {
+                infos.remove();
+            } else {
+                if (info.teleportCooldown > 0)
+                    info.teleportCooldown--;
+
+                if (info.teleportTimeout > 0) {
+                    info.teleportTimeout--;
+                    if (info.teleportTimeout == 0) {
+                        ServerPlayerEntity guidePlayer = minecraftServer.getPlayerManager().getPlayer(currentGuidePlayer);
+                        ServerPlayerEntity player = minecraftServer.getPlayerManager().getPlayer(info.player.getGameProfile().getName());
+
+                        if (player != null && player.isAlive()) {
+                            if (guidePlayer != null && guidePlayer.isAlive()) {
+                                sendToOps(player.getServer(), "Teleported " + player.getDisplayName().asString() + " to guide "
+                                + guidePlayer.getDisplayName().asString());
+
+                                teleportPlayerToPlayer(player, guidePlayer);
+                            } else {
+                                sendActionBarMessage(player, "There is no tour guide to teleport to!");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
     public static List<Integer> getGuideSlots(ServerPlayerEntity player) {
@@ -960,11 +997,30 @@ public class MechTourMod {
             return;
         }
 
-        sendActionBarMessage(player, "Teleporting to " + guidePlayer.getName().asString());
-        sendToOps(player.getServer(), "Teleported " + player.getDisplayName().asString() + " to guide "
-                + guidePlayer.getDisplayName().asString());
+        PlayerInfo info = playerInfos.get(player.getGameProfile().getName());
+        if (info == null) {
+            info = new PlayerInfo(player);
+            playerInfos.put(player.getGameProfile().getName(), info);
+        }
+        if (info.teleportCooldown > 0) {
+            sendActionBarMessage(player,
+                    "You must wait " + (info.teleportCooldown / 20) + " seconds to teleport again!");
+            return;
+        }
 
-        teleportPlayerToPlayer(player, guidePlayer);
+        info.teleportCooldown = Configs.configs.teleportCooldown;
+
+        info.teleportTimeout = Configs.configs.teleportTimeout;
+
+        sendActionBarMessage(player, "Teleporting to " + guidePlayer.getName().asString() + " in "
+                + (Configs.configs.teleportTimeout / 20) + " sec");
+        /*
+         * sendToOps(player.getServer(), "Teleported " +
+         * player.getDisplayName().asString() + " to guide " +
+         * guidePlayer.getDisplayName().asString());
+         * 
+         * teleportPlayerToPlayer(player, guidePlayer);
+         */
     }
 
     public static void sendMapLink(ServerPlayerEntity player) {

@@ -22,6 +22,8 @@ public class Configs {
     public boolean disableGuideItem = false;
     public boolean disableGuideHoldMessage = false;
     public boolean broadcastTeleportsToOps = true;
+    public int teleportCooldown = 20*15;
+    public int teleportTimeout = 20;
   //  public boolean fastColorMatch = true;
     
     public String mapUrlBase = "http://mechanists.org/maps";
