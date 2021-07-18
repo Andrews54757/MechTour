@@ -6,7 +6,6 @@ import net.andrews.mechtour.mapgui.MapGuiHolder;
 import net.andrews.mechtour.mapgui.MapRenderer;
 import net.andrews.mechtour.mapgui.MapText;
 import net.andrews.mechtour.waypoint.Waypoint;
-import net.andrews.mechtour.waypoint.WaypointIcons;
 import net.andrews.mechtour.waypoint.WaypointManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;

@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -756,6 +755,30 @@ public class MechTourMod {
         return player.inventory.insertStack(stack);
     }
 
+    private static boolean canTeleport(ServerPlayerEntity player, ServerPlayerEntity guidePlayer) {
+
+        if (player == null || !player.isAlive()) {
+            return false;
+        }
+
+        if (guidePlayer == null || !guidePlayer.isAlive()) {
+            sendActionBarMessage(player, "There is no tour guide to teleport to!");
+            return false;
+        }
+
+        if (player.getVehicle() != null) {
+            sendActionBarMessage(player, "You are riding something! Teleport aborted!");
+            return false;
+        }
+
+        if (guidePlayer.getVehicle() != null) {
+            sendActionBarMessage(player, "Guide is riding something! Teleport aborted!");
+            return false;
+        }
+
+        return true;
+    }
+
     public static void onBeforeTick(MinecraftServer minecraftServer) {
         if (guideCooldown > 0) {
             guideCooldown--;
@@ -834,20 +857,13 @@ public class MechTourMod {
 
                                 if (guidePlayer.getServerWorld() == info.world) {
 
-                                    if (player.getVehicle() != null) {
-                                        sendActionBarMessage(player, "You are riding something! Teleport aborted!");
-                                    } else {
-                                        if (guidePlayer.getVehicle() != null) {
-                                            sendActionBarMessage(player,
-                                                    "Guide is riding something! Teleport aborted!");
-                                        } else {
-                                            sendToOps(player.getServer(),
-                                                    "Teleported " + player.getDisplayName().asString() + " to guide "
-                                                            + guidePlayer.getDisplayName().asString());
+                                    if (canTeleport(player, guidePlayer)) {
+                                        sendToOps(player.getServer(), "Teleported " + player.getDisplayName().asString()
+                                                + " to guide " + guidePlayer.getDisplayName().asString());
 
-                                            teleportPlayerToPlayer(player, guidePlayer, info.pos);
-                                        }
+                                        teleportPlayerToPlayer(player, guidePlayer, info.pos);
                                     }
+
                                 } else {
                                     sendActionBarMessage(player, "Guide has changed dimensions! Please try again!");
                                 }
@@ -1023,6 +1039,10 @@ public class MechTourMod {
         if (info.teleportCooldown > 0) {
             sendActionBarMessage(player,
                     "You must wait " + (info.teleportCooldown / 20) + " seconds to teleport again!");
+            return;
+        }
+
+        if (!canTeleport(player, guidePlayer)) {
             return;
         }
 

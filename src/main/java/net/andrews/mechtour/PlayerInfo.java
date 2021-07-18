@@ -1,7 +1,5 @@
 package net.andrews.mechtour;
 
-import org.apache.logging.log4j.core.jmx.Server;
-
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Vec3d;

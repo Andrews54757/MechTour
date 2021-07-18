@@ -11,7 +11,6 @@ import java.awt.RenderingHints;
 
 import javax.imageio.ImageIO;
 
-import net.andrews.mechtour.Configs;
 import net.andrews.mechtour.mapgui.color.ColorMatcher;
 import net.fabricmc.loader.api.FabricLoader;
 

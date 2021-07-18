@@ -8,9 +8,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import net.andrews.mechtour.Utils;
-import net.andrews.mechtour.mapgui.BitMapImage;
 import net.andrews.mechtour.mapgui.gui.WaypointsMenuGui;
-import net.andrews.mechtour.waypoint.WaypointIcons.Icon;
 import net.fabricmc.loader.api.FabricLoader;
 
 public class WaypointManager {
