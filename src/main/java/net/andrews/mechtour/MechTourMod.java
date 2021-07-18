@@ -834,13 +834,19 @@ public class MechTourMod {
 
                                 if (guidePlayer.getServerWorld() == info.world) {
 
-                                    if (guidePlayer.getVehicle() != null) {
-                                        sendActionBarMessage(player, "Guide is riding something! Teleport aborted!");
+                                    if (player.getVehicle() != null) {
+                                        sendActionBarMessage(player, "You are riding something! Teleport aborted!");
                                     } else {
-                                    sendToOps(player.getServer(), "Teleported " + player.getDisplayName().asString()
-                                            + " to guide " + guidePlayer.getDisplayName().asString());
+                                        if (guidePlayer.getVehicle() != null) {
+                                            sendActionBarMessage(player,
+                                                    "Guide is riding something! Teleport aborted!");
+                                        } else {
+                                            sendToOps(player.getServer(),
+                                                    "Teleported " + player.getDisplayName().asString() + " to guide "
+                                                            + guidePlayer.getDisplayName().asString());
 
-                                    teleportPlayerToPlayer(player, guidePlayer, info.pos);
+                                            teleportPlayerToPlayer(player, guidePlayer, info.pos);
+                                        }
                                     }
                                 } else {
                                     sendActionBarMessage(player, "Guide has changed dimensions! Please try again!");
