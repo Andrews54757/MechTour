@@ -824,15 +824,23 @@ public class MechTourMod {
                 if (info.teleportTimeout > 0) {
                     info.teleportTimeout--;
                     if (info.teleportTimeout == 0) {
-                        ServerPlayerEntity guidePlayer = minecraftServer.getPlayerManager().getPlayer(currentGuidePlayer);
-                        ServerPlayerEntity player = minecraftServer.getPlayerManager().getPlayer(info.player.getGameProfile().getName());
+                        ServerPlayerEntity guidePlayer = minecraftServer.getPlayerManager()
+                                .getPlayer(currentGuidePlayer);
+                        ServerPlayerEntity player = minecraftServer.getPlayerManager()
+                                .getPlayer(info.player.getGameProfile().getName());
 
                         if (player != null && player.isAlive()) {
                             if (guidePlayer != null && guidePlayer.isAlive()) {
-                                sendToOps(player.getServer(), "Teleported " + player.getDisplayName().asString() + " to guide "
-                                + guidePlayer.getDisplayName().asString());
 
-                                teleportPlayerToPlayer(player, guidePlayer, info.pos);
+                                if (guidePlayer.getServerWorld() == info.world) {
+
+                                    sendToOps(player.getServer(), "Teleported " + player.getDisplayName().asString()
+                                            + " to guide " + guidePlayer.getDisplayName().asString());
+
+                                    teleportPlayerToPlayer(player, guidePlayer, info.pos);
+                                } else {
+                                    sendActionBarMessage(player, "Guide has changed dimensions! Please try again!");
+                                }
                             } else {
                                 sendActionBarMessage(player, "There is no tour guide to teleport to!");
                             }
@@ -952,7 +960,8 @@ public class MechTourMod {
 
     }
 
-    private static void teleportPlayerToPlayerInternal(ServerPlayerEntity player, ServerPlayerEntity target, Vec3d pos) {
+    private static void teleportPlayerToPlayerInternal(ServerPlayerEntity player, ServerPlayerEntity target,
+            Vec3d pos) {
         double x = pos.getX();
         double y = pos.getY();
         double z = pos.getZ();
@@ -1011,6 +1020,7 @@ public class MechTourMod {
 
         info.teleportTimeout = Configs.configs.teleportTimeout;
 
+        info.world = guidePlayer.getServerWorld();
         info.pos = guidePlayer.getPos();
         sendActionBarMessage(player, "Teleporting to " + guidePlayer.getName().asString() + " in "
                 + (Configs.configs.teleportTimeout / 20) + " sec");
