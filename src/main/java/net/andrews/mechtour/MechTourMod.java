@@ -834,10 +834,14 @@ public class MechTourMod {
 
                                 if (guidePlayer.getServerWorld() == info.world) {
 
+                                    if (guidePlayer.getVehicle() != null) {
+                                        sendActionBarMessage(player, "Guide is riding something! Teleport aborted!");
+                                    } else {
                                     sendToOps(player.getServer(), "Teleported " + player.getDisplayName().asString()
                                             + " to guide " + guidePlayer.getDisplayName().asString());
 
                                     teleportPlayerToPlayer(player, guidePlayer, info.pos);
+                                    }
                                 } else {
                                     sendActionBarMessage(player, "Guide has changed dimensions! Please try again!");
                                 }
