@@ -844,6 +844,9 @@ public class MechTourMod {
                 if (info.teleportCooldown > 0)
                     info.teleportCooldown--;
 
+                if (info.clickCooldown > 0)
+                    info.clickCooldown--;
+
                 if (info.teleportTimeout > 0) {
                     info.teleportTimeout--;
                     if (info.teleportTimeout == 0) {
@@ -953,15 +956,21 @@ public class MechTourMod {
     }
 
     public static void onInteractClick(ServerPlayerEntity player, CallbackInfoReturnable<ActionResult> ci) {
+        
+        PlayerInfo info = getPlayerInfo(player);
+        if (info.clickCooldown > 0) {
+            return;
+        }
         MapGuiHolder holder = guiHolders.get(player);
         if (holder != null && holder.isTrackingPanel()) {
+            info.clickCooldown = 6;
             holder.onInteractClick();
             ci.setReturnValue(ActionResult.CONSUME);
             return;
         }
 
         if (MechTourMod.isHoldingGuide(player) && !Configs.configs.disableGuideItem) {
-
+            info.clickCooldown = 6;
             if (Configs.configs.disableGui) {
                 teleportToGuide(player);
             } else {
@@ -972,8 +981,15 @@ public class MechTourMod {
     }
 
     public static void onSwingClick(ServerPlayerEntity player) {
+         
+        PlayerInfo info = getPlayerInfo(player);
+        if (info.clickCooldown > 0) {
+            return;
+        }
+
         MapGuiHolder holder = guiHolders.get(player);
         if (holder != null && holder.isTrackingPanel()) {
+            info.clickCooldown = 6;
             holder.onSwingClick();
             return;
         }
@@ -1017,6 +1033,15 @@ public class MechTourMod {
         player.setHeadYaw(yaw);
     }
 
+    public static PlayerInfo getPlayerInfo(ServerPlayerEntity player) {
+        PlayerInfo info = playerInfos.get(player.getGameProfile().getName());
+        if (info == null) {
+            info = new PlayerInfo(player);
+            playerInfos.put(player.getGameProfile().getName(), info);
+        }
+        return info;
+    }
+    
     public static void teleportToGuide(ServerPlayerEntity player) {
         ServerPlayerEntity guidePlayer = currentGuidePlayer == null ? null
                 : player.getServer().getPlayerManager().getPlayer(currentGuidePlayer);
@@ -1031,11 +1056,7 @@ public class MechTourMod {
             return;
         }
 
-        PlayerInfo info = playerInfos.get(player.getGameProfile().getName());
-        if (info == null) {
-            info = new PlayerInfo(player);
-            playerInfos.put(player.getGameProfile().getName(), info);
-        }
+        PlayerInfo info = getPlayerInfo(player);
         if (info.teleportCooldown > 0) {
             sendActionBarMessage(player,
                     "You must wait " + (info.teleportCooldown / 20) + " seconds to teleport again!");

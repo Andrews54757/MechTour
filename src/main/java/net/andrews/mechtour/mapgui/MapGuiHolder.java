@@ -36,7 +36,7 @@ public class MapGuiHolder {
     private int oldMouseX = -1;
     private int oldMouseY = -1;
 
-    private int clicked = 0;
+    private int scrolled = 0;
 
     private MapGuiBase mapGui;
     private int prevSlot = -1;
@@ -97,9 +97,9 @@ public class MapGuiHolder {
             closePanel();
         }
 
-        // ImageToMapProcessor.getBestColor(200, 0, 0, 255);
-        if (clicked > 0)
-            clicked--;
+        
+        if (scrolled > 0) scrolled--;
+
         if (isPanelOpen()) {
 
             if (this.mapGui != null && this.mapGui.shouldReRender(this)) {
@@ -161,17 +161,15 @@ public class MapGuiHolder {
     }
 
     public void onInteractClick() {
-        if (this.mapGui == null || clicked != 0)
+        if (this.mapGui == null)
             return;
-        clicked = 5;
         this.mapGui.onClick(true, this);
 
     }
 
     public void onSwingClick() {
-        if (this.mapGui == null || clicked != 0)
+        if (this.mapGui == null)
             return;
-        clicked = 5;
         this.mapGui.onClick(false, this);
     }
 
@@ -331,7 +329,7 @@ public class MapGuiHolder {
         }
         
        
-        if (lockedSlot != -1 && clicked == 0) {
+        if (lockedSlot != -1 && scrolled <= 0) {
             serverPlayNetworkHandler.sendPacket(new HeldItemChangeS2CPacket(lockedSlot));
             
             int prev = lockedSlot - 1;
@@ -340,10 +338,10 @@ public class MapGuiHolder {
             if (after >= 8) after = 0;
 
             if (selectedSlot == prev) {
-                clicked = 5;
+                scrolled = 5;
                 onScrollUp();
             } else if (selectedSlot == after) {
-                clicked = 5;
+                scrolled = 5;
                 onScrollDown();
             }
 

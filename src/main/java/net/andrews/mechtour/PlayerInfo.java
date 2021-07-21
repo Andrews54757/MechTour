@@ -8,6 +8,7 @@ public class PlayerInfo {
     public ServerPlayerEntity player;
     public int teleportCooldown = 0;
     public int teleportTimeout = 0;
+    public int clickCooldown = 0;
     public ServerWorld world;
     public Vec3d pos;
     public PlayerInfo(ServerPlayerEntity player) {
