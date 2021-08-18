@@ -268,7 +268,7 @@ public class WaypointsMenuGui extends MapGuiBase {
         private int index;
 
         private DimensionTab(Identifier identifier, byte color, int index) {
-            key = RegistryKey.of(Registry.DIMENSION, identifier);
+            key = RegistryKey.of(Registry.WORLD_KEY, identifier);
             this.color = color;
             this.index = index;
         }

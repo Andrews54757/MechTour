@@ -45,7 +45,7 @@ public class WaypointIcons {
         boolean matchSlow = false;
         boolean isFuzzy = false;
 
-        private HashMap<Integer, BitMapImage> images = new HashMap<>();
+        private transient HashMap<Integer, BitMapImage> images = new HashMap<>();
 
         public String getName() {
             return name;

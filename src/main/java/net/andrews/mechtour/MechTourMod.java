@@ -29,12 +29,11 @@ import net.minecraft.command.argument.Vec3ArgumentType;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtString;
+import net.minecraft.network.packet.s2c.play.OverlayMessageS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket;
-import net.minecraft.network.packet.s2c.play.TitleS2CPacket;
-import net.minecraft.network.packet.s2c.play.TitleS2CPacket.Action;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -738,21 +737,21 @@ public class MechTourMod {
     public static boolean giveGuideItemToPlayer(ServerPlayerEntity player) {
 
         ItemStack stack = new ItemStack(Items.COMPASS);
-        CompoundTag nbtCompound = new CompoundTag();
+        NbtCompound nbtCompound = new NbtCompound();
         nbtCompound.putBoolean("mechtour_guide_item", true);
-        ListTag t = new ListTag();
-        t.add(new CompoundTag());
+        NbtList t = new NbtList();
+        t.add(new NbtCompound());
         nbtCompound.put("Enchantments", t);
-        CompoundTag displayTag = new CompoundTag();
-        ListTag listTag = new ListTag();
-        listTag.add(StringTag.of("{\"text\":\"Don't Panic\",\"color\":\"dark_green\"}"));
-        displayTag.put("Lore", listTag);
+        NbtCompound displayTag = new NbtCompound();
+        NbtList NbtList = new NbtList();
+        NbtList.add(NbtString.of("{\"text\":\"Don't Panic\",\"color\":\"dark_green\"}"));
+        displayTag.put("Lore", NbtList);
         nbtCompound.put("display", displayTag);
         nbtCompound.putBoolean("LodestoneTracked", false);
-        stack.setTag(nbtCompound);
+        stack.setNbt(nbtCompound);
         stack.setCustomName(new LiteralText("\u00A76\u00A7oHitchhikers Guide\u00A7r"));
         stack.setCooldown(1);
-        return player.inventory.insertStack(stack);
+        return player.getInventory().insertStack(stack);
     }
 
     private static boolean canTeleport(ServerPlayerEntity player, ServerPlayerEntity guidePlayer) {
@@ -793,28 +792,28 @@ public class MechTourMod {
                     List<Integer> slots = getGuideSlots(player);
                     for (int slot : slots) {
 
-                        ItemStack stack = player.inventory.getStack(slot);
-                        stack.getTag().getCompound("display").remove("Lore");
+                        ItemStack stack = player.getInventory().getStack(slot);
+                        stack.getNbt().getCompound("display").remove("Lore");
                         if (guidePlayer != null && guidePlayer.isAlive()) {
-                            CompoundTag posTag = stack.getOrCreateSubTag("LodestonePos");
+                            NbtCompound posTag = stack.getOrCreateSubNbt("LodestonePos");
                             posTag.putInt("X", (int) guidePlayer.getX());
                             posTag.putInt("Y", (int) guidePlayer.getY());
                             posTag.putInt("Z", (int) guidePlayer.getZ());
-                            stack.getTag().putString("LodestoneDimension",
+                            stack.getNbt().putString("LodestoneDimension",
                                     guidePlayer.getServerWorld().getRegistryKey().getValue().toString());
-                            ListTag listTag = new ListTag();
-                            listTag.add(StringTag.of("{\"text\":\"Tracking " + guidePlayer.getName().asString()
+                            NbtList NbtList = new NbtList();
+                            NbtList.add(NbtString.of("{\"text\":\"Tracking " + guidePlayer.getName().asString()
                                     + "\",\"color\":\"blue\"}"));
-                            stack.getTag().getCompound("display").put("Lore", listTag);
+                            stack.getNbt().getCompound("display").put("Lore", NbtList);
                         } else {
-                            stack.removeSubTag("LodestonePos");
-                            stack.removeSubTag("LodestoneDimension");
-                            ListTag listTag = new ListTag();
-                            listTag.add(StringTag.of("{\"text\":\"Don't Panic\",\"color\":\"dark_green\"}"));
-                            stack.getTag().getCompound("display").put("Lore", listTag);
+                            stack.removeSubNbt("LodestonePos");
+                            stack.removeSubNbt("LodestoneDimension");
+                            NbtList NbtList = new NbtList();
+                            NbtList.add(NbtString.of("{\"text\":\"Don't Panic\",\"color\":\"dark_green\"}"));
+                            stack.getNbt().getCompound("display").put("Lore", NbtList);
                         }
 
-                        player.inventory.setStack(slot, stack);
+                        player.getInventory().setStack(slot, stack);
                     }
 
                 }
@@ -883,8 +882,8 @@ public class MechTourMod {
 
     public static List<Integer> getGuideSlots(ServerPlayerEntity player) {
         List<Integer> list = new ArrayList<Integer>();
-        for (int i = 0; i < player.inventory.main.size(); ++i) {
-            ItemStack stack = player.inventory.main.get(i);
+        for (int i = 0; i < player.getInventory().main.size(); ++i) {
+            ItemStack stack = player.getInventory().main.get(i);
             if (isGuideItem(stack)) {
                 list.add(i);
             }
@@ -893,15 +892,15 @@ public class MechTourMod {
     }
 
     public static boolean isHoldingGuide(ServerPlayerEntity player) {
-        if (player.isAlive() && PlayerInventory.isValidHotbarIndex(player.inventory.selectedSlot)) {
-            ItemStack stack = player.inventory.getStack(player.inventory.selectedSlot);
+        if (player.isAlive() && PlayerInventory.isValidHotbarIndex(player.getInventory().selectedSlot)) {
+            ItemStack stack = player.getInventory().getStack(player.getInventory().selectedSlot);
             return isGuideItem(stack);
         }
         return false;
     }
 
     public static boolean isGuideItem(ItemStack stack) {
-        return !stack.isEmpty() && stack.hasTag() && stack.getTag().contains("mechtour_guide_item");
+        return !stack.isEmpty() && stack.hasNbt() && stack.getNbt().contains("mechtour_guide_item");
     }
 
     public static void onUpdateSelectedSlot(ServerPlayNetworkHandler serverPlayNetworkHandler, int selectedSlot) {
@@ -916,7 +915,7 @@ public class MechTourMod {
             }
         }
 
-        ItemStack stack = player.inventory.getStack(selectedSlot);
+        ItemStack stack = player.getInventory().getStack(selectedSlot);
         if (isGuideItem(stack) && !Configs.configs.disableGuideItem && !Configs.configs.disableGuideHoldMessage) {
             if (Configs.configs.disableGui) {
                 if (!Configs.configs.disableWaypoints && !Configs.configs.disableTourTeleport)
@@ -930,7 +929,7 @@ public class MechTourMod {
     }
 
     public static void sendActionBarMessage(ServerPlayerEntity player, String str) {
-        Utils.sendPacket(player, new TitleS2CPacket(Action.ACTIONBAR, new LiteralText(str), 0, 20 * 3, 10));
+        Utils.sendPacket(player, new OverlayMessageS2CPacket(new LiteralText(str)));
     }
 
     public static void openGuideGUI(ServerPlayerEntity player) {
@@ -1011,7 +1010,7 @@ public class MechTourMod {
         float yaw = target.getYaw(1);
         ServerWorld world = target.getServerWorld();
         ChunkPos chunkPos = new ChunkPos(new BlockPos(x, y, z));
-        world.getChunkManager().addTicket(ChunkTicketType.POST_TELEPORT, chunkPos, 1, player.getEntityId());
+        world.getChunkManager().addTicket(ChunkTicketType.POST_TELEPORT, chunkPos, 1, player.getId());
         player.stopRiding();
         if (player.isSleeping()) {
             player.wakeUp(true, true);
@@ -1019,13 +1018,13 @@ public class MechTourMod {
 
         if (player.interactionManager.getGameMode() != target.interactionManager.getGameMode()) {
             if (target.interactionManager.getGameMode() == GameMode.SPECTATOR) {
-                player.setGameMode(target.interactionManager.getGameMode());
+                player.changeGameMode(target.interactionManager.getGameMode());
             }
         }
 
         if (world == player.getServerWorld()) {
             Set<PlayerPositionLookS2CPacket.Flag> set = EnumSet.noneOf(PlayerPositionLookS2CPacket.Flag.class);
-            player.networkHandler.teleportRequest(x, y, z, yaw, pitch, set);
+            player.networkHandler.requestTeleport(x, y, z, yaw, pitch, set);
         } else {
             player.teleport(world, x, y, z, yaw, pitch);
         }
@@ -1088,13 +1087,13 @@ public class MechTourMod {
 
         String dimension = "survival%20-%20overworld/survivalday";
 
-        if (player.getServerWorld().getRegistryKey() == RegistryKey.of(Registry.DIMENSION,
+        if (player.getServerWorld().getRegistryKey() == RegistryKey.of(Registry.WORLD_KEY,
                 DimensionType.OVERWORLD_ID)) {
             dimension = "survival%20-%20overworld/survivalday";
-        } else if (player.getServerWorld().getRegistryKey() == RegistryKey.of(Registry.DIMENSION,
+        } else if (player.getServerWorld().getRegistryKey() == RegistryKey.of(Registry.WORLD_KEY,
                 DimensionType.THE_NETHER_ID)) {
             dimension = "survival%20-%20nether/survivalnether";
-        } else if (player.getServerWorld().getRegistryKey() == RegistryKey.of(Registry.DIMENSION,
+        } else if (player.getServerWorld().getRegistryKey() == RegistryKey.of(Registry.WORLD_KEY,
                 DimensionType.THE_END_ID)) {
             dimension = "survival%20-%20end/survivalend";
         }
@@ -1156,10 +1155,10 @@ public class MechTourMod {
         float pitch = player.getPitch(1);
         float yaw = player.getYaw(1);
         Identifier identifier = new Identifier(waypoint.getDimension());
-        RegistryKey<World> registryKey = RegistryKey.of(Registry.DIMENSION, identifier);
+        RegistryKey<World> registryKey = RegistryKey.of(Registry.WORLD_KEY, identifier);
         ServerWorld world = player.getServer().getWorld(registryKey);
         ChunkPos chunkPos = new ChunkPos(new BlockPos(x, y, z));
-        world.getChunkManager().addTicket(ChunkTicketType.POST_TELEPORT, chunkPos, 1, player.getEntityId());
+        world.getChunkManager().addTicket(ChunkTicketType.POST_TELEPORT, chunkPos, 1, player.getId());
         player.stopRiding();
         if (player.isSleeping()) {
             player.wakeUp(true, true);
@@ -1167,7 +1166,7 @@ public class MechTourMod {
 
         if (world == player.getServerWorld()) {
             Set<PlayerPositionLookS2CPacket.Flag> set = EnumSet.noneOf(PlayerPositionLookS2CPacket.Flag.class);
-            player.networkHandler.teleportRequest(x, y, z, yaw, pitch, set);
+            player.networkHandler.requestTeleport(x, y, z, yaw, pitch, set);
         } else {
             player.teleport(world, x, y, z, yaw, pitch);
         }
