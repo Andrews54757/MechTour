@@ -50,6 +50,9 @@ public class MapGuiMap {
     }
 
     public boolean setPixel(int i, int j, byte color) {
+        if (i < 0 || i >= MAP_WIDTH || j < 0 || j >= MAP_HEIGHT) {
+            throw new IllegalArgumentException("Coordinates out of bounds");
+        }
         int index = i + j * MAP_WIDTH;
         if (this.colors[index] != color)
             changedBounds.includePos(i, j);
@@ -96,7 +99,12 @@ public class MapGuiMap {
             }
         }
 
-        byte[] colorsToSend = new byte[changedBounds.getSize()];
+        int size = changedBounds.getSize();
+        if (size == 0) {
+            return;
+        }
+        
+        byte[] colorsToSend = new byte[size];
         for (int x = 0; x < changedBounds.getWidth(); x++) {
             for (int y = 0; y < changedBounds.getHeight(); y++) {
                 colorsToSend[x + y * changedBounds.getWidth()] = colors[x + minX + (y + minY) * MAP_WIDTH];
