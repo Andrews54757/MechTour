@@ -1210,9 +1210,9 @@ public class MechTourMod {
 
     public static void teleportToWaypointInternal(ServerPlayerEntity player, Waypoint waypoint, boolean broadcast) {
 
-        double x = (double) waypoint.getX() + 0.5;
-        double y = (double) waypoint.getY();
-        double z = (double) waypoint.getZ() + 0.5;
+        double x = waypoint.getX();
+        double y = waypoint.getY();
+        double z = waypoint.getZ();
         float pitch = player.getPitch(1);
         float yaw = player.getYaw(1);
         Identifier identifier = new Identifier(waypoint.getDimension());
