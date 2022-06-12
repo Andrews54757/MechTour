@@ -27,7 +27,7 @@ public class Configs {
   //  public boolean fastColorMatch = true;
     
     public String mapUrlBase = "http://mechanists.org/maps";
-    public String aboutText = "Welcome to Mechanists!\n\nWe are a Technical Minecraft server currently on 1.16.5\n\nHardware: CPU: Ryzen 5 3600, RAM: 6GB\nSeed: 3671431547008281909\n\nMods We Use:\n- carpet, carpet-addons \u0026 carpet-extra\n- lithium\n\nCarpet Mod Features:\naccurateBlockPlacement, antiCheatDisabled, ctrlQCraftingFix, flippinCactus,\nmissingTools, onePlayerSleeping, optimizedTNT, shulkerSpawningInEndCities,\nstackableShulkerBoxes, xpNoCooldown";
+    public String aboutText = "Welcome to Mechanists!\n\nWe are a Technical Minecraft server currently on 1.17.1\n\nHardware: CPU: Ryzen 5 3600, RAM: 6GB\nSeed: 3671431547008281909\n\nMods We Use:\n- carpet, carpet-addons \u0026 carpet-extra\n- lithium\n\nCarpet Mod Features:\naccurateBlockPlacement, antiCheatDisabled, ctrlQCraftingFix, flippinCactus,\nmissingTools, onePlayerSleeping, optimizedTNT, shulkerSpawningInEndCities,\nstackableShulkerBoxes, xpNoCooldown";
     
     public transient static Configs configs;
 

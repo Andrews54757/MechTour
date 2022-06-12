@@ -117,9 +117,10 @@ public class MapGuiMap {
     }
 
     void forceSend() {
-        UpdateData updateData = new UpdateData(0, 0, MAP_WIDTH, MAP_HEIGHT, colors);
-        Utils.sendPacket(player, new MapUpdateS2CPacket(code, MAP_SCALE, false, null, updateData));
-        changedBounds.set(0, 0, 0, 0);
+        for (int index = 0; index < prevColors.length; index++) {
+            prevColors[index] = -1;
+        }
+        changedBounds.set(0, 0, MAP_WIDTH, MAP_HEIGHT);
     }
     int getEntityId() {
         return mapEntity.getId();

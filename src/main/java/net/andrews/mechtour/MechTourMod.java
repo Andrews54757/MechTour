@@ -929,34 +929,36 @@ public class MechTourMod {
     }
 
     public static void sendActionBarMessage(ServerPlayerEntity player, String str) {
-        
+
         Utils.sendPacket(player, new OverlayMessageS2CPacket(new LiteralText(str)));
     }
 
     public static void openGuideGUI(ServerPlayerEntity player) {
-        MapGuiHolder holder = guiHolders.get(player);
-        if (holder == null) {
-            holder = new MapGuiHolder(player);
-            holder.openGui(new GuideMenuGUI());
-            guiHolders.put(player, holder);
-        }
+        ((ThreadExecutor) player.getServer()).execute(() -> {
+            MapGuiHolder holder = guiHolders.get(player);
+            if (holder == null) {
+                holder = new MapGuiHolder(player);
+                holder.openGui(new GuideMenuGUI());
+                guiHolders.put(player, holder);
+            }
 
-        Direction facing = player.getHorizontalFacing().getOpposite();
-        BlockPos playerPos = player.getBlockPos().offset(player.getHorizontalFacing(), 4);
+            Direction facing = player.getHorizontalFacing().getOpposite();
+            BlockPos playerPos = player.getBlockPos().offset(player.getHorizontalFacing(), 4);
 
-        if (holder.isPanelOpen()) {
-            holder.closePanel();
-            sendActionBarMessage(player, "Closed guide menu!");
-        } else {
+            if (holder.isPanelOpen()) {
+                holder.closePanel();
+                sendActionBarMessage(player, "Closed guide menu!");
+            } else {
 
-            holder.openPanel(playerPos, facing, 7, 4);
-            sendActionBarMessage(player, "Opened guide menu!");
-        }
+                holder.openPanel(playerPos, facing, 7, 4);
+                sendActionBarMessage(player, "Opened guide menu!");
+            }
 
+        });
     }
 
     public static void onInteractClick(ServerPlayerEntity player, CallbackInfoReturnable<ActionResult> ci) {
-        
+
         PlayerInfo info = getPlayerInfo(player);
         if (info.clickCooldown > 0) {
             return;
@@ -981,7 +983,7 @@ public class MechTourMod {
     }
 
     public static void onSwingClick(ServerPlayerEntity player) {
-         
+
         PlayerInfo info = getPlayerInfo(player);
         if (info.clickCooldown > 0) {
             return;
@@ -1041,7 +1043,7 @@ public class MechTourMod {
         }
         return info;
     }
-    
+
     public static void teleportToGuide(ServerPlayerEntity player) {
         ServerPlayerEntity guidePlayer = currentGuidePlayer == null ? null
                 : player.getServer().getPlayerManager().getPlayer(currentGuidePlayer);
