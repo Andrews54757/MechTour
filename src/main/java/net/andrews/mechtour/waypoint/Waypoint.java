@@ -12,9 +12,9 @@ public class Waypoint {
     String name;
     String dimension;
     String icon;
-    int x;
-    int y;
-    int z;
+    double x;
+    double y;
+    double z;
     int r = 83;
     int g = 134;
     int b = 184;
@@ -23,7 +23,7 @@ public class Waypoint {
 
     transient MapText cachedPosText = null;
 
-    public Waypoint(int x, int y, int z, String dimension, String name, String iconName) {
+    public Waypoint(double x, double y, double z, String dimension, String name, String iconName) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -41,7 +41,7 @@ public class Waypoint {
 
     public String voxelmap_string() {
         return String.format("[name:%s, x:%s, y:%s, z:%s, dim:minecraft:%s, icon:%s]", scrubNameRegex(name),
-                Integer.valueOf(getX()), Integer.valueOf(getY()), Integer.valueOf(getZ()), getDimension(),
+                Integer.valueOf((int)getX()), Integer.valueOf((int)getY()), Integer.valueOf((int)getZ()), getDimension(),
                 getIconName());
     }
 
@@ -67,21 +67,21 @@ public class Waypoint {
 
     public MapText getPosText() {
         if (cachedPosText == null) {
-            cachedPosText = new MapText("TP > " + this.getX() + ", " + this.getY() + ", " + this.getZ() + "",
+            cachedPosText = new MapText("TP > " + (int)this.getX() + ", " + (int)this.getY() + ", " + (int)this.getZ() + "",
                     new Font("Arial", Font.PLAIN, 45));
         }
         return cachedPosText;
     }
 
-    public int getX() {
+    public double getX() {
         return x;
     }
 
-    public int getY() {
+    public double getY() {
         return y;
     }
 
-    public int getZ() {
+    public double getZ() {
         return z;
     }
 
@@ -98,17 +98,17 @@ public class Waypoint {
         this.cachedText = null;
     }
 
-    public void setX(int x) {
+    public void setX(double x) {
         this.x = x;
         this.cachedPosText = null;
     }
 
-    public void setY(int y) {
+    public void setY(double y) {
         this.y = y;
         this.cachedPosText = null;
     }
 
-    public void setZ(int z) {
+    public void setZ(double z) {
         this.z = z;
         this.cachedPosText = null;
     }

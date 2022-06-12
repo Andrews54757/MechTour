@@ -156,6 +156,10 @@ public class MechTourMod {
                                                                                 b))
                                                         .executes(MechTourMod::removeWaypoint)))
                                         .executes(MechTourMod::removeWaypoint2))
+                                .then(CommandManager.literal("modifyPos").requires((serverCommandSource) -> {
+                                    return serverCommandSource.hasPermissionLevel(2);
+                                }).then(CommandManager.argument("pos", Vec3ArgumentType.vec3())
+                                        .executes(MechTourMod::modifyPos)).executes(MechTourMod::modifyPos))
                                 .then(CommandManager.literal("modifyIcon").requires((serverCommandSource) -> {
                                     return serverCommandSource.hasPermissionLevel(2);
                                 }).then(CommandManager.argument("icon", StringArgumentType.word())
@@ -419,7 +423,7 @@ public class MechTourMod {
             String icon = StringArgumentType.getString(ctx, "icon");
             String name = StringArgumentType.getString(ctx, "name");
 
-            waypointManager.addWaypoint((int) pos.getX(), (int) pos.getY(), (int) pos.getZ(), dimension, name, icon);
+            waypointManager.addWaypoint((int)pos.getX(), (int)pos.getY(), (int)pos.getZ(), dimension, name, icon);
             sendFeedback(ctx, "Added waypoint " + name, true);
         } catch (Exception e) {
             sendFeedback(ctx, "An error has occured: " + e, true);
@@ -526,6 +530,60 @@ public class MechTourMod {
             waypointManager.waypointsUpdated();
             sendFeedback(ctx, "Changed index of waypoint " + waypoint.getName() + " in dimension "
                     + waypoint.getDimension() + " to " + newpos + "!", true);
+        } catch (Exception e) {
+            sendFeedback(ctx, "An error has occured: " + e, true);
+        }
+
+        return 1;
+    }
+
+    private static int modifyPos(CommandContext<ServerCommandSource> ctx) {
+
+        try {
+            if (Configs.configs.disableWaypoints) {
+                sendFeedback(ctx, "Waypoints are disabled!");
+                return 1;
+            }
+            if (Configs.configs.disableWaypointEdits) {
+                sendFeedback(ctx, "Waypoint editing is disabled!");
+                return 1;
+            }
+
+            MapGuiHolder holder = guiHolders.get(ctx.getSource().getPlayer());
+
+            if (holder == null || !holder.isPanelOpen() || holder.getGui() == null
+                    || !(holder.getGui() instanceof WaypointsMenuGui)) {
+                sendFeedback(ctx, "Waypoint gui is not open!", true);
+                return 1;
+            }
+
+            WaypointsMenuGui gui = (WaypointsMenuGui) holder.getGui();
+
+            Waypoint waypoint = gui.getWaypoint();
+
+            if (waypoint == null) {
+                sendFeedback(ctx, "You need to point at the waypoint!", true);
+                return 1;
+            }
+            Vec3d pos;
+
+            try {
+                pos = Vec3ArgumentType.getPosArgument(ctx, "pos").toAbsolutePos(ctx.getSource());
+            } catch (Exception e) {
+                pos = ctx.getSource().getPosition();
+            }
+
+            double x = (int)pos.getX();
+            double y = (int)pos.getY();
+            double z = (int)pos.getZ();
+            
+            waypoint.setX(x);
+            waypoint.setY(y);
+            waypoint.setZ(z);
+
+            waypointManager.waypointsUpdated();
+            sendFeedback(ctx, "Changed position of waypoint " + waypoint.getName() + " in dimension "
+                    + waypoint.getDimension() + " to " + x + ", " + y + ", " + z + "!", true);
         } catch (Exception e) {
             sendFeedback(ctx, "An error has occured: " + e, true);
         }

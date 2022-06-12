@@ -87,7 +87,7 @@ public class WaypointManager {
         return newarr;
     }
 
-    public void addWaypoint(int x, int y, int z, String dimension, String name, String iconName) {
+    public void addWaypoint(double x, double y, double z, String dimension, String name, String iconName) {
         waypoints.add(new Waypoint(x, y, z, dimension, name, iconName));
 
         waypointsUpdated();
