@@ -423,7 +423,7 @@ public class MechTourMod {
             String icon = StringArgumentType.getString(ctx, "icon");
             String name = StringArgumentType.getString(ctx, "name");
 
-            waypointManager.addWaypoint((int)pos.getX(), (int)pos.getY(), (int)pos.getZ(), dimension, name, icon);
+            waypointManager.addWaypoint(pos.getX(), pos.getY(), pos.getZ(), dimension, name, icon);
             sendFeedback(ctx, "Added waypoint " + name, true);
         } catch (Exception e) {
             sendFeedback(ctx, "An error has occured: " + e, true);
@@ -573,9 +573,9 @@ public class MechTourMod {
                 pos = ctx.getSource().getPosition();
             }
 
-            double x = (int)pos.getX();
-            double y = (int)pos.getY();
-            double z = (int)pos.getZ();
+            double x = pos.getX();
+            double y = pos.getY();
+            double z = pos.getZ();
             
             waypoint.setX(x);
             waypoint.setY(y);
