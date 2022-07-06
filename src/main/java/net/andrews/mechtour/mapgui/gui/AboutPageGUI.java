@@ -45,7 +45,7 @@ public class AboutPageGUI extends MapGuiBase {
 
         MapRenderer.drawText(holder, Resources.about_title,
                 holder.getPanelPixelWidth() / 2 - Resources.about_title.getWidth() / 2, 0,
-                holder.getPlayer().getServerWorld().getRegistryKey().getValue().equals(DimensionType.OVERWORLD_ID)
+                holder.getPlayer().getWorld().getRegistryKey().getValue().equals(DimensionType.OVERWORLD_ID)
                         ? ((byte) 116)
                         : ((byte) 58));
 
