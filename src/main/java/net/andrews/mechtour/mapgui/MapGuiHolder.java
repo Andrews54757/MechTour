@@ -83,7 +83,7 @@ public class MapGuiHolder {
         if (!player.isAlive())
             return true;
 
-        if (panelWorld != player.getServerWorld())
+        if (panelWorld != player.getWorld())
             return true;
 
         if (!player.getBlockPos().isWithinDistance(panelOpenPos, 10))
@@ -236,7 +236,7 @@ public class MapGuiHolder {
             this.mapGui.setReRenderFlag(true);
         }
         this.panelOpen = true;
-        this.panelWorld = this.player.getServerWorld();
+        this.panelWorld = this.player.getWorld();
         this.panelOpenPos = openPos;
         this.panelFacingSide = side;
 

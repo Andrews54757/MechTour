@@ -808,7 +808,7 @@ public class MechTourMod {
         nbtCompound.putBoolean("LodestoneTracked", false);
         stack.setNbt(nbtCompound);
         stack.setCustomName(new LiteralText("\u00A76\u00A7oHitchhikers Guide\u00A7r"));
-        stack.setCooldown(1);
+        stack.setBobbingAnimationTime(1);
         return player.getInventory().insertStack(stack);
     }
 
@@ -858,7 +858,7 @@ public class MechTourMod {
                             posTag.putInt("Y", (int) guidePlayer.getY());
                             posTag.putInt("Z", (int) guidePlayer.getZ());
                             stack.getNbt().putString("LodestoneDimension",
-                                    guidePlayer.getServerWorld().getRegistryKey().getValue().toString());
+                                    guidePlayer.getWorld().getRegistryKey().getValue().toString());
                             NbtList NbtList = new NbtList();
                             NbtList.add(NbtString.of("{\"text\":\"Tracking " + guidePlayer.getName().asString()
                                     + "\",\"color\":\"blue\"}"));
@@ -915,7 +915,7 @@ public class MechTourMod {
                         if (player != null && player.isAlive()) {
                             if (guidePlayer != null && guidePlayer.isAlive()) {
 
-                                if (guidePlayer.getServerWorld() == info.world) {
+                                if (guidePlayer.getWorld() == info.world) {
 
                                     if (canTeleport(player, guidePlayer)) {
                                         sendToOps(player.getServer(), "Teleported " + player.getDisplayName().asString()
@@ -1069,7 +1069,7 @@ public class MechTourMod {
         double z = pos.getZ();
         float pitch = target.getPitch(1);
         float yaw = target.getYaw(1);
-        ServerWorld world = target.getServerWorld();
+        ServerWorld world = target.getWorld();
         ChunkPos chunkPos = new ChunkPos(new BlockPos(x, y, z));
         world.getChunkManager().addTicket(ChunkTicketType.POST_TELEPORT, chunkPos, 1, player.getId());
         player.stopRiding();
@@ -1083,7 +1083,7 @@ public class MechTourMod {
             }
         }
 
-        if (world == player.getServerWorld()) {
+        if (world == player.getWorld()) {
             Set<PlayerPositionLookS2CPacket.Flag> set = EnumSet.noneOf(PlayerPositionLookS2CPacket.Flag.class);
             player.networkHandler.requestTeleport(x, y, z, yaw, pitch, set);
         } else {
@@ -1131,7 +1131,7 @@ public class MechTourMod {
 
         info.teleportTimeout = Configs.configs.teleportTimeout;
 
-        info.world = guidePlayer.getServerWorld();
+        info.world = guidePlayer.getWorld();
         info.pos = guidePlayer.getPos();
         sendActionBarMessage(player, "Teleporting to " + guidePlayer.getName().asString() + " in "
                 + (Configs.configs.teleportTimeout / 20) + " sec");
@@ -1148,13 +1148,13 @@ public class MechTourMod {
 
         String dimension = "survival%20-%20overworld/survivalday";
 
-        if (player.getServerWorld().getRegistryKey() == RegistryKey.of(Registry.WORLD_KEY,
+        if (player.getWorld().getRegistryKey() == RegistryKey.of(Registry.WORLD_KEY,
                 DimensionType.OVERWORLD_ID)) {
             dimension = "survival%20-%20overworld/survivalday";
-        } else if (player.getServerWorld().getRegistryKey() == RegistryKey.of(Registry.WORLD_KEY,
+        } else if (player.getWorld().getRegistryKey() == RegistryKey.of(Registry.WORLD_KEY,
                 DimensionType.THE_NETHER_ID)) {
             dimension = "survival%20-%20nether/survivalnether";
-        } else if (player.getServerWorld().getRegistryKey() == RegistryKey.of(Registry.WORLD_KEY,
+        } else if (player.getWorld().getRegistryKey() == RegistryKey.of(Registry.WORLD_KEY,
                 DimensionType.THE_END_ID)) {
             dimension = "survival%20-%20end/survivalend";
         }
@@ -1225,7 +1225,7 @@ public class MechTourMod {
             player.wakeUp(true, true);
         }
 
-        if (world == player.getServerWorld()) {
+        if (world == player.getWorld()) {
             Set<PlayerPositionLookS2CPacket.Flag> set = EnumSet.noneOf(PlayerPositionLookS2CPacket.Flag.class);
             player.networkHandler.requestTeleport(x, y, z, yaw, pitch, set);
         } else {

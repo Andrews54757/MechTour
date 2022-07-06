@@ -98,7 +98,7 @@ public class WaypointsMenuGui extends MapGuiBase {
     @Override
     public void render(MapGuiHolder holder) {
         if (currentDimensionTab == null)
-            setDimensionTab(DimensionTab.getDimensionTab(holder.getPlayer().getServerWorld()));
+            setDimensionTab(DimensionTab.getDimensionTab(holder.getPlayer().getWorld()));
         MapRenderer.fill(holder, (byte) 0);
         // banner = new BitMapImage("banner.png").scaledDimensions(-1,
         // 100).setAlphaCutoff(200).bake();
@@ -165,7 +165,7 @@ public class WaypointsMenuGui extends MapGuiBase {
         }
 
         MapRenderer.drawText(holder, titleText, holder.getPanelPixelWidth() / 2 - titleText.getWidth() / 2, 5,
-        holder.getPlayer().getServerWorld().getRegistryKey().getValue().equals(DimensionType.OVERWORLD_ID)
+        holder.getPlayer().getWorld().getRegistryKey().getValue().equals(DimensionType.OVERWORLD_ID)
         ? ((byte) 116)
         : ((byte) 58));
 
