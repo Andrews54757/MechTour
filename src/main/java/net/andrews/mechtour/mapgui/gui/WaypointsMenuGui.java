@@ -165,7 +165,7 @@ public class WaypointsMenuGui extends MapGuiBase {
         }
 
         MapRenderer.drawText(holder, titleText, holder.getPanelPixelWidth() / 2 - titleText.getWidth() / 2, 5,
-        holder.getPlayer().getWorld().getRegistryKey().getValue().equals(DimensionType.OVERWORLD_ID)
+        holder.getPlayer().getWorld().getRegistryKey().equals(World.OVERWORLD)
         ? ((byte) 116)
         : ((byte) 58));
 
@@ -260,15 +260,15 @@ public class WaypointsMenuGui extends MapGuiBase {
     }
 
     public enum DimensionTab {
-        OVERWORLD(DimensionType.OVERWORLD_ID, (byte) 76, 0), NETHER(DimensionType.THE_NETHER_ID, (byte) 114, 1),
-        END(DimensionType.THE_END_ID, (byte) 72, 2);
+        OVERWORLD(World.OVERWORLD, (byte) 76, 0), NETHER(World.NETHER, (byte) 114, 1),
+        END(World.END, (byte) 72, 2);
 
         private byte color;
         private RegistryKey<World> key;
         private int index;
 
-        private DimensionTab(Identifier identifier, byte color, int index) {
-            key = RegistryKey.of(Registry.WORLD_KEY, identifier);
+        private DimensionTab(RegistryKey<World> key, byte color, int index) {
+            this.key = key;
             this.color = color;
             this.index = index;
         }
