@@ -41,7 +41,6 @@ import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
@@ -206,7 +205,7 @@ public class MechTourMod {
     }
 
     private static void sendFeedback(CommandContext<ServerCommandSource> ctx, String str, boolean ops) {
-        ctx.getSource().sendFeedback(new LiteralText(str), ops);
+        ctx.getSource().sendFeedback(Text.literal(str), ops);
     }
 
     private static void sendFeedback(CommandContext<ServerCommandSource> ctx, String str) {
@@ -807,7 +806,7 @@ public class MechTourMod {
         nbtCompound.put("display", displayTag);
         nbtCompound.putBoolean("LodestoneTracked", false);
         stack.setNbt(nbtCompound);
-        stack.setCustomName(new LiteralText("\u00A76\u00A7oHitchhikers Guide\u00A7r"));
+        stack.setCustomName(Text.literal("\u00A76\u00A7oHitchhikers Guide\u00A7r"));
         stack.setBobbingAnimationTime(1);
         return player.getInventory().insertStack(stack);
     }
@@ -860,7 +859,7 @@ public class MechTourMod {
                             stack.getNbt().putString("LodestoneDimension",
                                     guidePlayer.getWorld().getRegistryKey().getValue().toString());
                             NbtList NbtList = new NbtList();
-                            NbtList.add(NbtString.of("{\"text\":\"Tracking " + guidePlayer.getName().asString()
+                            NbtList.add(NbtString.of("{\"text\":\"Tracking " + guidePlayer.getName().getString()
                                     + "\",\"color\":\"blue\"}"));
                             stack.getNbt().getCompound("display").put("Lore", NbtList);
                         } else {
@@ -918,8 +917,8 @@ public class MechTourMod {
                                 if (guidePlayer.getWorld() == info.world) {
 
                                     if (canTeleport(player, guidePlayer)) {
-                                        sendToOps(player.getServer(), "Teleported " + player.getDisplayName().asString()
-                                                + " to guide " + guidePlayer.getDisplayName().asString());
+                                        sendToOps(player.getServer(), "Teleported " + player.getDisplayName().getString()
+                                                + " to guide " + guidePlayer.getDisplayName().getString());
 
                                         teleportPlayerToPlayer(player, guidePlayer, info.pos);
                                     }
@@ -988,7 +987,7 @@ public class MechTourMod {
 
     public static void sendActionBarMessage(ServerPlayerEntity player, String str) {
 
-        Utils.sendPacket(player, new OverlayMessageS2CPacket(new LiteralText(str)));
+        Utils.sendPacket(player, new OverlayMessageS2CPacket(Text.literal(str)));
     }
 
     public static void openGuideGUI(ServerPlayerEntity player) {
@@ -1133,12 +1132,12 @@ public class MechTourMod {
 
         info.world = guidePlayer.getWorld();
         info.pos = guidePlayer.getPos();
-        sendActionBarMessage(player, "Teleporting to " + guidePlayer.getName().asString() + " in "
+        sendActionBarMessage(player, "Teleporting to " + guidePlayer.getName().getString() + " in "
                 + (Configs.configs.teleportTimeout / 20) + " sec");
         /*
          * sendToOps(player.getServer(), "Teleported " +
-         * player.getDisplayName().asString() + " to guide " +
-         * guidePlayer.getDisplayName().asString());
+         * player.getDisplayName().getString() + " to guide " +
+         * guidePlayer.getDisplayName().getString());
          * 
          * teleportPlayerToPlayer(player, guidePlayer);
          */
@@ -1148,43 +1147,37 @@ public class MechTourMod {
 
         String dimension = "survival%20-%20overworld/survivalday";
 
-        if (player.getWorld().getRegistryKey() == RegistryKey.of(Registry.WORLD_KEY,
-                DimensionType.OVERWORLD_ID)) {
+        if (player.getWorld().getRegistryKey() == World.OVERWORLD) {
             dimension = "survival%20-%20overworld/survivalday";
-        } else if (player.getWorld().getRegistryKey() == RegistryKey.of(Registry.WORLD_KEY,
-                DimensionType.THE_NETHER_ID)) {
+        } else if (player.getWorld().getRegistryKey() == World.NETHER) {
             dimension = "survival%20-%20nether/survivalnether";
-        } else if (player.getWorld().getRegistryKey() == RegistryKey.of(Registry.WORLD_KEY,
-                DimensionType.THE_END_ID)) {
+        } else if (player.getWorld().getRegistryKey() == World.END) {
             dimension = "survival%20-%20end/survivalend";
         }
 
         String link = Configs.configs.mapUrlBase + "/#/" + player.getBlockPos().getX() + "/64/"
                 + player.getBlockPos().getZ() + "/-1/" + dimension;
 
-        player.sendSystemMessage(Text.Serializer.fromJson(
+        player.sendMessage(Text.Serializer.fromJson(
                 "{\"text\":\"[Click Me]\",\"color\":\"dark_green\",\"underlined\":true,\"hoverEvent\":{\"action\":\"show_text\",\"contents\":[{\"text\":\""
-                        + link + "\"}]},\"clickEvent\":{\"action\":\"open_url\",\"value\":\"" + link + "\"}}"),
-                Util.NIL_UUID);
+                        + link + "\"}]},\"clickEvent\":{\"action\":\"open_url\",\"value\":\"" + link + "\"}}"));
     }
 
     private static void sendToOps(MinecraftServer server, String message) {
         if (!Configs.configs.broadcastTeleportsToOps)
             return;
-        Text text = (new LiteralText(message)).formatted(new Formatting[] { Formatting.GRAY, Formatting.ITALIC });
+        Text text = (Text.literal(message)).formatted(Formatting.GRAY, Formatting.ITALIC);
 
         if (server.getGameRules().getBoolean(GameRules.SEND_COMMAND_FEEDBACK)) {
-            Iterator<ServerPlayerEntity> var3 = server.getPlayerManager().getPlayerList().iterator();
-            while (var3.hasNext()) {
-                ServerPlayerEntity serverPlayerEntity = (ServerPlayerEntity) var3.next();
+            for (ServerPlayerEntity serverPlayerEntity : server.getPlayerManager().getPlayerList()) {
                 if (server.getPlayerManager().isOperator(serverPlayerEntity.getGameProfile())) {
-                    serverPlayerEntity.sendSystemMessage(text, Util.NIL_UUID);
+                    serverPlayerEntity.sendMessage(text);
                 }
             }
         }
 
         if (server.getGameRules().getBoolean(GameRules.LOG_ADMIN_COMMANDS)) {
-            server.sendSystemMessage(text, Util.NIL_UUID);
+            server.sendMessage(text);
         }
 
     }
@@ -1232,7 +1225,7 @@ public class MechTourMod {
             player.teleport(world, x, y, z, yaw, pitch);
         }
         if (broadcast)
-            sendToOps(player.getServer(), "Teleported " + player.getDisplayName().asString() + " to waypoint "
+            sendToOps(player.getServer(), "Teleported " + player.getDisplayName().getString() + " to waypoint "
                     + waypoint.getName() + " in dimension " + waypoint.getDimension());
 
     }
