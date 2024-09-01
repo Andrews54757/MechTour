@@ -7,9 +7,8 @@ import net.andrews.mechtour.mapgui.MapRenderer;
 import net.andrews.mechtour.mapgui.MapText;
 import net.andrews.mechtour.waypoint.Waypoint;
 import net.andrews.mechtour.waypoint.WaypointManager;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 

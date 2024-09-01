@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.spongepowered.asm.mixin.injection.At;
 import net.andrews.mechtour.MechTourMod;
+import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 
@@ -20,7 +21,7 @@ public class MixinCommandManager {
     private CommandDispatcher<ServerCommandSource> dispatcher;
     
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void onRegister(CommandManager.RegistrationEnvironment arg, CallbackInfo ci) {
+    private void onRegister(CommandManager.RegistrationEnvironment arg, CommandRegistryAccess commandRegistryAccess, CallbackInfo ci) {
         MechTourMod.registerCommands(this.dispatcher);
     }
 }
