@@ -738,7 +738,7 @@ public class SoonCMPMod {
     }
 
     public static void openGuideGUI(ServerPlayerEntity player) {
-        ((ThreadExecutor) player.getServer()).execute(() -> {
+        ((ThreadExecutor<?>) player.getServer()).execute(() -> {
             MapGuiHolder holder = guiHolders.get(player);
             if (holder == null) {
                 holder = new MapGuiHolder(player);
@@ -854,7 +854,7 @@ public class SoonCMPMod {
 
         sendActionBarMessage(player, "Teleporting to " + waypoint.getName());
 
-        ((ThreadExecutor) player.getServer()).execute(() -> {
+        ((ThreadExecutor<?>) player.getServer()).execute(() -> {
             teleportToWaypointInternal(player, waypoint, broadcast);
         });
     }
@@ -864,7 +864,7 @@ public class SoonCMPMod {
 
         sendActionBarMessage(player, "Teleporting to spawn");
 
-        ((ThreadExecutor) player.getServer()).execute(() -> {
+        ((ThreadExecutor<?>) player.getServer()).execute(() -> {
             teleportToWaypointInternal(player, new Waypoint(9.5, -43, -6.5, "overworld", "Spawn", "spawn"), false);
         });
     }
