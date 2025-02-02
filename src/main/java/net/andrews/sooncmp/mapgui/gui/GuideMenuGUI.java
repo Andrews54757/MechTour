@@ -94,15 +94,8 @@ public class GuideMenuGUI extends MapGuiBase {
                 holder.getPanelPixelHeight() / 2 + gap + offsetY, bWidth, bHeight);
         aboutButton.setDimensions(holder.getPanelPixelWidth() / 2 + gap,
                 holder.getPanelPixelHeight() / 2 + gap + offsetY, bWidth, bHeight);
-
-        //backButton.setDimentions(10, 10, 100, 50);
         closeButton.setDimensions(holder.getPanelPixelWidth() - 100 - 10, 10, 100, 50);
 
-        // MapText text = new MapText("Hello!", new Font("Arial", Font.PLAIN, 100));
-
-        // MapRenderer.drawText(holder, text, 0, 200, (byte)40);
-
-        // System.out.println(mechLogo.getWidth());
 
         super.render(holder);
     }
