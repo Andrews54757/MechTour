@@ -6,7 +6,6 @@ import java.util.ArrayList;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.Entity;
-import net.minecraft.network.Packet;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -44,7 +43,7 @@ public class Utils {
     public static Path getConfigDir() {
        return FabricLoader.getInstance().getConfigDir();
     }
-    public static void sendPacket(ServerPlayerEntity player, Packet<?> packet) {
+    public static void sendPacket(ServerPlayerEntity player, net.minecraft.network.packet.Packet<?> packet) {
         if (player.isDisconnected()) return;
         player.networkHandler.sendPacket(packet);
     }

@@ -2,13 +2,16 @@ package net.andrews.mechtour.mapgui;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import net.andrews.mechtour.Utils;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.MapIdComponent;
+import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.decoration.GlowItemFrameEntity;
 import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.item.map.MapIcon;
 import net.minecraft.item.map.MapState.UpdateData;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket;
@@ -19,24 +22,21 @@ import net.minecraft.util.math.Direction;
 
 public class MapGuiMap {
 
-    private int code;
+    private MapIdComponent code;
     private ServerPlayerEntity player;
 
     private ItemFrameEntity mapEntity = null;
     private ItemStack mapItem;
-    private NbtCompound mapItemTag;
 
     public static int MAP_WIDTH = 128;
     public static int MAP_HEIGHT = 128;
     public static byte MAP_SCALE = 0;
-    public static Collection<MapIcon> MAP_ICONS = new ArrayList<MapIcon>();
-
     private byte[] colors;
 
     private Mutable2DRect changedBounds = new Mutable2DRect(0, 0, 0, 0);
     private byte[] prevColors;
 
-    MapGuiMap(int code, MapGuiHolder holder, ServerPlayerEntity player) {
+    MapGuiMap(MapIdComponent code, MapGuiHolder holder, ServerPlayerEntity player) {
         this.code = code;
         this.player = player;
         this.colors = new byte[MAP_WIDTH * MAP_HEIGHT];
@@ -44,8 +44,7 @@ public class MapGuiMap {
 
 
         this.mapItem = new ItemStack(Items.FILLED_MAP);
-        this.mapItemTag = this.mapItem.getOrCreateNbt();
-        this.mapItemTag.putInt("map", code);
+        this.mapItem.set(DataComponentTypes.MAP_ID, code);
         this.mapItem.setCount(1);
     }
 
@@ -66,16 +65,16 @@ public class MapGuiMap {
 
     void updateItemFrame(BlockPos pos, Direction side, int x, int y) {
 
-        this.mapEntity = new GlowItemFrameEntity(player.world, pos, side);
+        this.mapEntity = new GlowItemFrameEntity(player.getWorld(), pos, side);
         this.mapEntity.setInvisible(true);
         this.mapEntity.setHeldItemStack(this.mapItem, false);
     }
 
     void showFrame() {
-        Utils.sendPacket(player, this.mapEntity.createSpawnPacket());
-        if (!mapEntity.getDataTracker().isEmpty()) {
-            Utils.sendPacket(player, new EntityTrackerUpdateS2CPacket(this.mapEntity.getId(), this.mapEntity.getDataTracker().getChangedEntries()));
-
+        Utils.sendPacket(player, this.mapEntity.createSpawnPacket(null));
+        List<DataTracker.SerializedEntry<?>> list = this.mapEntity.getDataTracker().getChangedEntries();
+        if (list != null && list.size() > 0) {
+            Utils.sendPacket(player, new EntityTrackerUpdateS2CPacket(this.mapEntity.getId(), list));
         }
     }
 

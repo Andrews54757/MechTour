@@ -34,6 +34,7 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.network.packet.s2c.play.OverlayMessageS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket;
+import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
@@ -84,18 +85,13 @@ public class MechTourMod {
         WaypointIcons.noop();
         waypointManager = new WaypointManager();
 
-        dispatcher.register(CommandManager.literal("mechtour").requires((serverCommandSource) -> {
+        dispatcher.register(CommandManager.literal("sooncmp").requires((serverCommandSource) -> {
             return serverCommandSource.hasPermissionLevel(2);
-        }).then(CommandManager.literal("giveitem")
-                .then(CommandManager.literal("guide")
-                        .then(CommandManager.argument("players", EntityArgumentType.players())
-                                .executes(MechTourMod::giveGuides))
-
-                        .executes(MechTourMod::giveGuide)))
-                .then(CommandManager.literal("config").then(CommandManager.argument("name", StringArgumentType.word())
-                        .suggests((c, b) -> CommandSource.suggestMatching(Configs.getFields(), b)).then(CommandManager
-                                .argument("value", StringArgumentType.greedyString()).executes(MechTourMod::setConfig))
-                        .executes(MechTourMod::getConfig)))
+        })
+            .then(CommandManager.literal("config").then(CommandManager.argument("name", StringArgumentType.word())
+                    .suggests((c, b) -> CommandSource.suggestMatching(Configs.getFields(), b)).then(CommandManager
+                            .argument("value", StringArgumentType.greedyString()).executes(MechTourMod::setConfig))
+                    .executes(MechTourMod::getConfig)))
 
         );
 
@@ -181,7 +177,8 @@ public class MechTourMod {
                                 .then(CommandManager.literal("reload").requires((serverCommandSource) -> {
                                     return serverCommandSource.hasPermissionLevel(2);
                                 }).then(CommandManager.literal("icons").executes(MechTourMod::reloadIconsCommand))
-                                        .executes(MechTourMod::reloadCommand)));
+                                        .executes(MechTourMod::reloadCommand))
+                                .executes(MechTourMod::openGuiCommand));
 
         dispatcher.register(CommandManager.literal("tpw").requires((serverCommandSource) -> {
             return serverCommandSource.hasPermissionLevel(2);
@@ -199,12 +196,12 @@ public class MechTourMod {
                                                 b))
                                 .executes(MechTourMod::tpWaypoint)))));
 
-        dispatcher.register(CommandManager.literal("opengui").executes(MechTourMod::openGuiCommand));
+        // dispatcher.register(CommandManager.literal("opengui").executes(MechTourMod::openGuiCommand));
 
     }
 
     private static void sendFeedback(CommandContext<ServerCommandSource> ctx, String str, boolean ops) {
-        ctx.getSource().sendFeedback(Text.literal(str), ops);
+        ctx.getSource().sendFeedback(() -> Text.literal(str), ops);
     }
 
     private static void sendFeedback(CommandContext<ServerCommandSource> ctx, String str) {
@@ -412,7 +409,7 @@ public class MechTourMod {
             try {
                 dimension = DimensionArgumentType.getDimensionArgument(ctx, "dimension").getRegistryKey().getValue()
                         .getPath();
-                pos = Vec3ArgumentType.getPosArgument(ctx, "pos").toAbsolutePos(ctx.getSource());
+                pos = Vec3ArgumentType.getPosArgument(ctx, "pos").getPos(ctx.getSource());
             } catch (Exception e) {
                 dimension = ctx.getSource().getWorld().getRegistryKey().getValue().getPath();
                 pos = ctx.getSource().getPosition();
@@ -566,7 +563,7 @@ public class MechTourMod {
             Vec3d pos;
 
             try {
-                pos = Vec3ArgumentType.getPosArgument(ctx, "pos").toAbsolutePos(ctx.getSource());
+                pos = Vec3ArgumentType.getPosArgument(ctx, "pos").getPos(ctx.getSource());
             } catch (Exception e) {
                 pos = ctx.getSource().getPosition();
             }
@@ -574,7 +571,7 @@ public class MechTourMod {
             double x = pos.getX();
             double y = pos.getY();
             double z = pos.getZ();
-            
+
             waypoint.setX(x);
             waypoint.setY(y);
             waypoint.setZ(z);
@@ -713,43 +710,6 @@ public class MechTourMod {
         return 1;
     }
 
-    private static int giveGuide(CommandContext<ServerCommandSource> ctx) {
-
-        ServerPlayerEntity player = null;
-        try {
-            player = ctx.getSource().getPlayer();
-        } catch (Exception e) {
-            sendFeedback(ctx, "Player must run command");
-            return 1;
-        }
-
-        if (giveGuideItemToPlayer(player)) {
-            sendFeedback(ctx, "Gave guide item to player", true);
-        } else {
-            sendFeedback(ctx, "Failed to give guide item to player", true);
-        }
-        return 1;
-    }
-
-    private static int giveGuides(CommandContext<ServerCommandSource> ctx) {
-
-        try {
-
-            Collection<ServerPlayerEntity> players = EntityArgumentType.getPlayers(ctx, "players");
-            int count = 0;
-            for (ServerPlayerEntity player : players) {
-                giveGuideItemToPlayer(player);
-                count++;
-            }
-
-            sendFeedback(ctx, "Gave guide items to " + count + " players", true);
-
-        } catch (Exception e) {
-            sendFeedback(ctx, "An error has occured: " + e, true);
-        }
-        return 1;
-    }
-
     private static int tpWaypoint(CommandContext<ServerCommandSource> ctx) {
 
         try {
@@ -790,26 +750,6 @@ public class MechTourMod {
         return 1;
     }
 
-    public static boolean giveGuideItemToPlayer(ServerPlayerEntity player) {
-
-        ItemStack stack = new ItemStack(Items.COMPASS);
-        NbtCompound nbtCompound = new NbtCompound();
-        nbtCompound.putBoolean("mechtour_guide_item", true);
-        NbtList t = new NbtList();
-        t.add(new NbtCompound());
-        nbtCompound.put("Enchantments", t);
-        NbtCompound displayTag = new NbtCompound();
-        NbtList NbtList = new NbtList();
-        NbtList.add(NbtString.of("{\"text\":\"Don't Panic\",\"color\":\"dark_green\"}"));
-        displayTag.put("Lore", NbtList);
-        nbtCompound.put("display", displayTag);
-        nbtCompound.putBoolean("LodestoneTracked", false);
-        stack.setNbt(nbtCompound);
-        stack.setCustomName(Text.literal("\u00A76\u00A7oHitchhikers Guide\u00A7r"));
-        stack.setBobbingAnimationTime(1);
-        return player.getInventory().insertStack(stack);
-    }
-
     private static boolean canTeleport(ServerPlayerEntity player, ServerPlayerEntity guidePlayer) {
 
         if (player == null || !player.isAlive()) {
@@ -835,48 +775,6 @@ public class MechTourMod {
     }
 
     public static void onBeforeTick(MinecraftServer minecraftServer) {
-        if (guideCooldown > 0) {
-            guideCooldown--;
-        } else {
-            guideCooldown = 40;
-
-            ServerPlayerEntity guidePlayer = currentGuidePlayer == null ? null
-                    : minecraftServer.getPlayerManager().getPlayer(currentGuidePlayer);
-            List<ServerPlayerEntity> players = minecraftServer.getPlayerManager().getPlayerList();
-            for (ServerPlayerEntity player : players) {
-                if (player.isAlive()) {
-                    List<Integer> slots = getGuideSlots(player);
-                    for (int slot : slots) {
-
-                        ItemStack stack = player.getInventory().getStack(slot);
-                        stack.getNbt().getCompound("display").remove("Lore");
-                        if (guidePlayer != null && guidePlayer.isAlive()) {
-                            NbtCompound posTag = stack.getOrCreateSubNbt("LodestonePos");
-                            posTag.putInt("X", (int) guidePlayer.getX());
-                            posTag.putInt("Y", (int) guidePlayer.getY());
-                            posTag.putInt("Z", (int) guidePlayer.getZ());
-                            stack.getNbt().putString("LodestoneDimension",
-                                    guidePlayer.getWorld().getRegistryKey().getValue().toString());
-                            NbtList NbtList = new NbtList();
-                            NbtList.add(NbtString.of("{\"text\":\"Tracking " + guidePlayer.getName().getString()
-                                    + "\",\"color\":\"blue\"}"));
-                            stack.getNbt().getCompound("display").put("Lore", NbtList);
-                        } else {
-                            stack.removeSubNbt("LodestonePos");
-                            stack.removeSubNbt("LodestoneDimension");
-                            NbtList NbtList = new NbtList();
-                            NbtList.add(NbtString.of("{\"text\":\"Don't Panic\",\"color\":\"dark_green\"}"));
-                            stack.getNbt().getCompound("display").put("Lore", NbtList);
-                        }
-
-                        player.getInventory().setStack(slot, stack);
-                    }
-
-                }
-            }
-
-        }
-
         Iterator<MapGuiHolder> guis = guiHolders.values().iterator();
         while (guis.hasNext()) {
             MapGuiHolder gui = guis.next();
@@ -898,65 +796,11 @@ public class MechTourMod {
             } else {
                 if (info.teleportCooldown > 0)
                     info.teleportCooldown--;
-
                 if (info.clickCooldown > 0)
                     info.clickCooldown--;
-
-                if (info.teleportTimeout > 0) {
-                    info.teleportTimeout--;
-                    if (info.teleportTimeout == 0) {
-                        ServerPlayerEntity guidePlayer = minecraftServer.getPlayerManager()
-                                .getPlayer(currentGuidePlayer);
-                        ServerPlayerEntity player = minecraftServer.getPlayerManager()
-                                .getPlayer(info.player.getGameProfile().getName());
-
-                        if (player != null && player.isAlive()) {
-                            if (guidePlayer != null && guidePlayer.isAlive()) {
-
-                                if (guidePlayer.getWorld() == info.world) {
-
-                                    if (canTeleport(player, guidePlayer)) {
-                                        sendToOps(player.getServer(), "Teleported " + player.getDisplayName().getString()
-                                                + " to guide " + guidePlayer.getDisplayName().getString());
-
-                                        teleportPlayerToPlayer(player, guidePlayer, info.pos);
-                                    }
-
-                                } else {
-                                    sendActionBarMessage(player, "Guide has changed dimensions! Please try again!");
-                                }
-                            } else {
-                                sendActionBarMessage(player, "There is no tour guide to teleport to!");
-                            }
-                        }
-                    }
-                }
             }
         }
 
-    }
-
-    public static List<Integer> getGuideSlots(ServerPlayerEntity player) {
-        List<Integer> list = new ArrayList<Integer>();
-        for (int i = 0; i < player.getInventory().main.size(); ++i) {
-            ItemStack stack = player.getInventory().main.get(i);
-            if (isGuideItem(stack)) {
-                list.add(i);
-            }
-        }
-        return list;
-    }
-
-    public static boolean isHoldingGuide(ServerPlayerEntity player) {
-        if (player.isAlive() && PlayerInventory.isValidHotbarIndex(player.getInventory().selectedSlot)) {
-            ItemStack stack = player.getInventory().getStack(player.getInventory().selectedSlot);
-            return isGuideItem(stack);
-        }
-        return false;
-    }
-
-    public static boolean isGuideItem(ItemStack stack) {
-        return !stack.isEmpty() && stack.hasNbt() && stack.getNbt().contains("mechtour_guide_item");
     }
 
     public static void onUpdateSelectedSlot(ServerPlayNetworkHandler serverPlayNetworkHandler, int selectedSlot) {
@@ -970,18 +814,6 @@ public class MechTourMod {
                 return;
             }
         }
-
-        ItemStack stack = player.getInventory().getStack(selectedSlot);
-        if (isGuideItem(stack) && !Configs.configs.disableGuideItem && !Configs.configs.disableGuideHoldMessage) {
-            if (Configs.configs.disableGui) {
-                if (!Configs.configs.disableWaypoints && !Configs.configs.disableTourTeleport)
-                    sendActionBarMessage(player, "Use to teleport to tour");
-            } else {
-                if (holder == null || !holder.isPanelOpen())
-                    sendActionBarMessage(player, "Use to open menu");
-            }
-        }
-
     }
 
     public static void sendActionBarMessage(ServerPlayerEntity player, String str) {
@@ -1026,16 +858,6 @@ public class MechTourMod {
             ci.setReturnValue(ActionResult.CONSUME);
             return;
         }
-
-        if (MechTourMod.isHoldingGuide(player) && !Configs.configs.disableGuideItem) {
-            info.clickCooldown = 6;
-            if (Configs.configs.disableGui) {
-                teleportToGuide(player);
-            } else {
-                MechTourMod.openGuideGUI(player);
-            }
-            ci.setReturnValue(ActionResult.CONSUME);
-        }
     }
 
     public static void onSwingClick(ServerPlayerEntity player) {
@@ -1053,44 +875,6 @@ public class MechTourMod {
         }
     }
 
-    private static void teleportPlayerToPlayer(ServerPlayerEntity player, ServerPlayerEntity target, Vec3d pos) {
-        ((ThreadExecutor) player.getServer()).execute(() -> {
-            teleportPlayerToPlayerInternal(player, target, pos);
-        });
-
-    }
-
-    private static void teleportPlayerToPlayerInternal(ServerPlayerEntity player, ServerPlayerEntity target,
-            Vec3d pos) {
-        double x = pos.getX();
-        double y = pos.getY();
-        double z = pos.getZ();
-        float pitch = target.getPitch(1);
-        float yaw = target.getYaw(1);
-        ServerWorld world = target.getWorld();
-        ChunkPos chunkPos = new ChunkPos(new BlockPos(x, y, z));
-        world.getChunkManager().addTicket(ChunkTicketType.POST_TELEPORT, chunkPos, 1, player.getId());
-        player.stopRiding();
-        if (player.isSleeping()) {
-            player.wakeUp(true, true);
-        }
-
-        if (player.interactionManager.getGameMode() != target.interactionManager.getGameMode()) {
-            if (target.interactionManager.getGameMode() == GameMode.SPECTATOR) {
-                player.changeGameMode(target.interactionManager.getGameMode());
-            }
-        }
-
-        if (world == player.getWorld()) {
-            Set<PlayerPositionLookS2CPacket.Flag> set = EnumSet.noneOf(PlayerPositionLookS2CPacket.Flag.class);
-            player.networkHandler.requestTeleport(x, y, z, yaw, pitch, set);
-        } else {
-            player.teleport(world, x, y, z, yaw, pitch);
-        }
-
-        player.setHeadYaw(yaw);
-    }
-
     public static PlayerInfo getPlayerInfo(ServerPlayerEntity player) {
         PlayerInfo info = playerInfos.get(player.getGameProfile().getName());
         if (info == null) {
@@ -1100,66 +884,25 @@ public class MechTourMod {
         return info;
     }
 
-    public static void teleportToGuide(ServerPlayerEntity player) {
-        ServerPlayerEntity guidePlayer = currentGuidePlayer == null ? null
-                : player.getServer().getPlayerManager().getPlayer(currentGuidePlayer);
-
-        if (Configs.configs.disableTourTeleport) {
-            sendActionBarMessage(player, "Teleport to tour is disabled!");
-            return;
-        }
-
-        if (guidePlayer == null || !guidePlayer.isAlive()) {
-            sendActionBarMessage(player, "There is no tour guide to teleport to!");
-            return;
-        }
-
-        PlayerInfo info = getPlayerInfo(player);
-        if (info.teleportCooldown > 0) {
-            sendActionBarMessage(player,
-                    "You must wait " + (info.teleportCooldown / 20) + " seconds to teleport again!");
-            return;
-        }
-
-        if (!canTeleport(player, guidePlayer)) {
-            return;
-        }
-
-        info.teleportCooldown = Configs.configs.teleportCooldown;
-
-        info.teleportTimeout = Configs.configs.teleportTimeout;
-
-        info.world = guidePlayer.getWorld();
-        info.pos = guidePlayer.getPos();
-        sendActionBarMessage(player, "Teleporting to " + guidePlayer.getName().getString() + " in "
-                + (Configs.configs.teleportTimeout / 20) + " sec");
-        /*
-         * sendToOps(player.getServer(), "Teleported " +
-         * player.getDisplayName().getString() + " to guide " +
-         * guidePlayer.getDisplayName().getString());
-         * 
-         * teleportPlayerToPlayer(player, guidePlayer);
-         */
-    }
-
     public static void sendMapLink(ServerPlayerEntity player) {
 
-        String dimension = "survival%20-%20overworld/survivalday";
+        String dimension = "New%20World";
 
         if (player.getWorld().getRegistryKey() == World.OVERWORLD) {
-            dimension = "survival%20-%20overworld/survivalday";
+            dimension = "New%20World";
         } else if (player.getWorld().getRegistryKey() == World.NETHER) {
-            dimension = "survival%20-%20nether/survivalnether";
+            dimension = "DIM-1";
         } else if (player.getWorld().getRegistryKey() == World.END) {
-            dimension = "survival%20-%20end/survivalend";
+            dimension = "DIM1";
         }
 
-        String link = Configs.configs.mapUrlBase + "/#/" + player.getBlockPos().getX() + "/64/"
-                + player.getBlockPos().getZ() + "/-1/" + dimension;
+        String link = Configs.configs.mapUrlBase + "/?worldname=" + dimension + "&mapname=flat&zoom=5&x=" + player.getBlockPos().getX() + "&y=64&z="
+                + player.getBlockPos().getZ();
 
-        player.sendMessage(Text.Serializer.fromJson(
+        player.sendMessage(Text.Serialization.fromJson(
                 "{\"text\":\"[Click Me]\",\"color\":\"dark_green\",\"underlined\":true,\"hoverEvent\":{\"action\":\"show_text\",\"contents\":[{\"text\":\""
-                        + link + "\"}]},\"clickEvent\":{\"action\":\"open_url\",\"value\":\"" + link + "\"}}"));
+                        + link + "\"}]},\"clickEvent\":{\"action\":\"open_url\",\"value\":\"" + link + "\"}}",
+                player.getRegistryManager()));
     }
 
     private static void sendToOps(MinecraftServer server, String message) {
@@ -1200,6 +943,16 @@ public class MechTourMod {
         });
     }
 
+
+    public static void teleportToSpawn(ServerPlayerEntity player) {
+
+        sendActionBarMessage(player, "Teleporting to spawn");
+
+        ((ThreadExecutor) player.getServer()).execute(() -> {
+            teleportToWaypointInternal(player, new Waypoint(9.5, -43, -6.5, "overworld", "Spawn", "spawn"), false);
+        });
+    }
+
     public static void teleportToWaypointInternal(ServerPlayerEntity player, Waypoint waypoint, boolean broadcast) {
 
         double x = waypoint.getX();
@@ -1207,21 +960,15 @@ public class MechTourMod {
         double z = waypoint.getZ();
         float pitch = player.getPitch(1);
         float yaw = player.getYaw(1);
-        Identifier identifier = new Identifier(waypoint.getDimension());
+        Set<PositionFlag> set = EnumSet.noneOf(PositionFlag.class);
+        Identifier identifier = Identifier.of(waypoint.getDimension());
         RegistryKey<World> registryKey = RegistryKey.of(RegistryKeys.WORLD, identifier);
         ServerWorld world = player.getServer().getWorld(registryKey);
-        ChunkPos chunkPos = new ChunkPos(new BlockPos(x, y, z));
-        world.getChunkManager().addTicket(ChunkTicketType.POST_TELEPORT, chunkPos, 1, player.getId());
-        player.stopRiding();
-        if (player.isSleeping()) {
-            player.wakeUp(true, true);
-        }
 
         if (world == player.getWorld()) {
-            Set<PlayerPositionLookS2CPacket.Flag> set = EnumSet.noneOf(PlayerPositionLookS2CPacket.Flag.class);
-            player.networkHandler.requestTeleport(x, y, z, yaw, pitch, set);
+            player.networkHandler.requestTeleport(x, y, z, yaw, pitch);
         } else {
-            player.teleport(world, x, y, z, yaw, pitch);
+            player.teleport(world, x, y, z, set, yaw, pitch, true);
         }
         if (broadcast)
             sendToOps(player.getServer(), "Teleported " + player.getDisplayName().getString() + " to waypoint "

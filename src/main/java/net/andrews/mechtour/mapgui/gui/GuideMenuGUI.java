@@ -40,7 +40,7 @@ public class GuideMenuGUI extends MapGuiBase {
                 hoverTextColor);
 
         teleportButton.setClickCallback((boolean isInteract, MapGuiHolder holder) -> {
-            MechTourMod.teleportToGuide(holder.getPlayer());
+           MechTourMod.teleportToSpawn(holder.getPlayer());
         });
 
         waypointsButton.setClickCallback((boolean isInteract, MapGuiHolder holder) -> {

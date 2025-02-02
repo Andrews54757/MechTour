@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import net.andrews.mechtour.Utils;
 import net.andrews.mechtour.mapgui.gui.MapGuiBase;
+import net.minecraft.component.type.MapIdComponent;
 import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
 import net.minecraft.network.packet.s2c.play.UpdateSelectedSlotS2CPacket;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
@@ -106,7 +107,7 @@ public class MapGuiHolder {
                 this.mapGui.render(this);
                 this.mapGui.setReRenderFlag(false);
             }
-            BlockHitResult result = Utils.raycastBox(player.world, player, 20, panelBox);
+            BlockHitResult result = Utils.raycastBox(player.getWorld(), player, 20, panelBox);
 
             int newMouseX = -1;
             int newMouseY = -1;
@@ -236,7 +237,7 @@ public class MapGuiHolder {
             this.mapGui.setReRenderFlag(true);
         }
         this.panelOpen = true;
-        this.panelWorld = this.player.getWorld();
+        this.panelWorld = this.player.getServerWorld();
         this.panelOpenPos = openPos;
         this.panelFacingSide = side;
 
@@ -283,7 +284,7 @@ public class MapGuiHolder {
 
                 MapGuiMap map;
                 if (index >= maps.size()) {
-                    map = new MapGuiMap(PREFIX + index, this, player);
+                    map = new MapGuiMap(new MapIdComponent(PREFIX + index), this, player);
                     maps.add(map);
                 } else {
                     map = maps.get(index);

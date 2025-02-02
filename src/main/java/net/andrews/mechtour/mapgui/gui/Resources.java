@@ -14,7 +14,7 @@ public class Resources {
     public static BitMapImage teleport_icon = new BitMapImage("tp_icon.png").scaledDimensions(-1, 100)
     .setAlphaCutoff(250).setColor(29, 113, 173).bake();
 
-    public static MapText teleport_text = new MapText("TP to Tour", new Font("Arial", Font.PLAIN, 40));
+    public static MapText teleport_text = new MapText("TP to Spawn", new Font("Arial", Font.PLAIN, 40));
 
     public static BitMapImage waypoints_icon = new BitMapImage("waypoints_icon.png").scaledDimensions(-1, 100)
             .setAlphaCutoff(250).setColor(29, 113, 173).bake();
