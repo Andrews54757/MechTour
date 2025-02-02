@@ -29,7 +29,7 @@ public class BitMapImage {
     public BitMapImage(String image) {
        // image = image.replaceAll("\\/","");
         
-        Path path = FabricLoader.getInstance().getConfigDir().resolve("mechtour/" + image);
+        Path path = FabricLoader.getInstance().getConfigDir().resolve("sooncmp/" + image);
         try {
             toProcess = ImageIO.read(new File(path.toString()));
 

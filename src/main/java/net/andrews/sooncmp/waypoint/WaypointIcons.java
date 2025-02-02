@@ -18,7 +18,7 @@ public class WaypointIcons {
 
     public static void load() {
        
-       String str = Utils.readTextFile(FabricLoader.getInstance().getConfigDir().resolve("mechtour/waypoint_icons.json"));
+       String str = Utils.readTextFile(FabricLoader.getInstance().getConfigDir().resolve("sooncmp/waypoint_icons.json"));
        if (str == null) str = "[]";
        Gson gson = new Gson();
        Icon[] ic = gson.fromJson(str,Icon[].class);

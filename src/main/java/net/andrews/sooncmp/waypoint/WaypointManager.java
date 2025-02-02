@@ -38,7 +38,7 @@ public class WaypointManager {
     }
 
     public void loadFromFile() {
-        String str = Utils.readTextFile(FabricLoader.getInstance().getConfigDir().resolve("mechtour/waypoints.json"));
+        String str = Utils.readTextFile(FabricLoader.getInstance().getConfigDir().resolve("sooncmp/waypoints.json"));
         if (str == null)
             str = "[]";
         Gson gson = new Gson();
@@ -68,7 +68,7 @@ public class WaypointManager {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String json = gson.toJson(waypoints);
 
-        Utils.writeTextFile(FabricLoader.getInstance().getConfigDir().resolve("mechtour/waypoints.json"), json);
+        Utils.writeTextFile(FabricLoader.getInstance().getConfigDir().resolve("sooncmp/waypoints.json"), json);
 
     }
 

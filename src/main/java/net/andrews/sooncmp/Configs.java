@@ -27,7 +27,7 @@ public class Configs {
   //  public boolean fastColorMatch = true;
     
     public String mapUrlBase = "http://cmpmap.soontech.org";
-    public String aboutText = "Welcome to SoonCMP!\n\nWe are a Community Lead Encoded Storage Minecraft server currently on 1.21.4\n\nHardware: CPU: Apple M4";
+    public String aboutText = "Welcome to SoonCMP!\n\nWe are a community led encoded storage Minecraft server currently on 1.21.4\n\nHardware: CPU: Apple M4";
     
     public transient static Configs configs;
 
@@ -85,7 +85,7 @@ public class Configs {
     }
 
     public static void loadFromFile() {
-        String str = Utils.readTextFile(FabricLoader.getInstance().getConfigDir().resolve("mechtour/config.json"));
+        String str = Utils.readTextFile(FabricLoader.getInstance().getConfigDir().resolve("sooncmp/config.json"));
 
         if (str == null) {
             str = "{}";
@@ -101,7 +101,7 @@ public class Configs {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String json = gson.toJson(configs);
 
-        Path path = FabricLoader.getInstance().getConfigDir().resolve("mechtour/config.json");
+        Path path = FabricLoader.getInstance().getConfigDir().resolve("sooncmp/config.json");
         if (Files.notExists(path.getParent())) {
             try {
                 Files.createDirectories(path.getParent());
