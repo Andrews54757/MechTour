@@ -8,10 +8,7 @@ import net.andrews.sooncmp.mapgui.MapText;
 import net.andrews.sooncmp.waypoint.Waypoint;
 import net.andrews.sooncmp.waypoint.WaypointManager;
 import net.minecraft.registry.RegistryKey;
-import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
-
 import java.util.ArrayList;
 
 public class WaypointsMenuGui extends MapGuiBase {

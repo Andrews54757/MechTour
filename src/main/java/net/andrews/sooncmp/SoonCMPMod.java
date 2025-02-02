@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import com.mojang.brigadier.CommandDispatcher;
@@ -26,14 +25,7 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.DimensionArgumentType;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.Vec3ArgumentType;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.network.packet.s2c.play.OverlayMessageS2CPacket;
-import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket;
 import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -42,27 +34,19 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.thread.ThreadExecutor;
-import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 
 public class SoonCMPMod {
-
-    private static String currentGuidePlayer = "";
-
-    private static int guideCooldown = 40;
     private static HashMap<ServerPlayerEntity, MapGuiHolder> guiHolders = new HashMap<>();
 
     private static HashMap<String, PlayerInfo> playerInfos = new HashMap<>();
@@ -94,15 +78,6 @@ public class SoonCMPMod {
                     .executes(SoonCMPMod::getConfig)))
 
         );
-
-        dispatcher.register(CommandManager.literal("guideset").requires((serverCommandSource) -> {
-            return serverCommandSource.hasPermissionLevel(2);
-        }).then(CommandManager.argument("player", EntityArgumentType.player()).executes(SoonCMPMod::setGuide))
-                .executes(SoonCMPMod::setGuide));
-
-        dispatcher.register(CommandManager.literal("guidestop").requires((serverCommandSource) -> {
-            return serverCommandSource.hasPermissionLevel(2);
-        }).executes(SoonCMPMod::stopGuide));
 
         dispatcher
                 .register(
@@ -250,41 +225,6 @@ public class SoonCMPMod {
             String name = StringArgumentType.getString(ctx, "name");
 
             sendFeedback(ctx, name + " is set to:\n" + Configs.getConfig(name), true);
-
-        } catch (Exception e) {
-            sendFeedback(ctx, "An error has occured: " + e, true);
-
-        }
-        return 1;
-    }
-
-    private static int setGuide(CommandContext<ServerCommandSource> ctx) {
-        try {
-
-            ServerPlayerEntity player;
-            try {
-                player = EntityArgumentType.getPlayer(ctx, "player");
-            } catch (Exception e) {
-                player = ctx.getSource().getPlayer();
-            }
-
-            currentGuidePlayer = player.getGameProfile().getName().toString();
-            guideCooldown = 0;
-            sendFeedback(ctx, currentGuidePlayer + " is the tour guide now!", true);
-
-        } catch (Exception e) {
-            sendFeedback(ctx, "An error has occured: " + e, true);
-
-        }
-        return 1;
-    }
-
-    private static int stopGuide(CommandContext<ServerCommandSource> ctx) {
-        try {
-
-            currentGuidePlayer = null;
-            guideCooldown = 0;
-            sendFeedback(ctx, "Guide unset", true);
 
         } catch (Exception e) {
             sendFeedback(ctx, "An error has occured: " + e, true);
@@ -748,30 +688,6 @@ public class SoonCMPMod {
             sendFeedback(ctx, "An error has occured: " + e, true);
         }
         return 1;
-    }
-
-    private static boolean canTeleport(ServerPlayerEntity player, ServerPlayerEntity guidePlayer) {
-
-        if (player == null || !player.isAlive()) {
-            return false;
-        }
-
-        if (guidePlayer == null || !guidePlayer.isAlive()) {
-            sendActionBarMessage(player, "There is no tour guide to teleport to!");
-            return false;
-        }
-
-        if (player.getVehicle() != null) {
-            sendActionBarMessage(player, "You are riding something! Teleport aborted!");
-            return false;
-        }
-
-        if (guidePlayer.getVehicle() != null) {
-            sendActionBarMessage(player, "Guide is riding something! Teleport aborted!");
-            return false;
-        }
-
-        return true;
     }
 
     public static void onBeforeTick(MinecraftServer minecraftServer) {

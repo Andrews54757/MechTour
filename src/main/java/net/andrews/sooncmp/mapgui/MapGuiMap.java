@@ -1,7 +1,5 @@
 package net.andrews.sooncmp.mapgui;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import net.andrews.sooncmp.Utils;
@@ -13,7 +11,6 @@ import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.map.MapState.UpdateData;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.MapUpdateS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;

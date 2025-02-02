@@ -4,7 +4,6 @@ import net.andrews.sooncmp.Configs;
 import net.andrews.sooncmp.mapgui.MapGuiHolder;
 import net.andrews.sooncmp.mapgui.MapRenderer;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 
 public class AboutPageGUI extends MapGuiBase {
 
