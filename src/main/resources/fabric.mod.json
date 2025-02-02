@@ -3,14 +3,14 @@
   "id": "mechtour",
   "version": "${version}",
 
-  "name": "MechTour",
+  "name": "SoonCMP",
   "description": "For server tours",
   "authors": [
     "Andrews54757"
   ],
   "contact": {
-    "homepage": "https://github.com/Andrews54757/MechTour",
-    "sources": "https://github.com/Andrews54757/MechTour"
+    "homepage": "https://github.com/Andrews54757/SoonCMP",
+    "sources": "https://github.com/Andrews54757/SoonCMP"
   },
 
   "license": "AGPL-3.0",
@@ -19,7 +19,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.andrews.mechtour.MechTour"
+      "net.andrews.sooncmp.SoonCMP"
     ]
   },
   "mixins": [

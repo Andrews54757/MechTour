@@ -1,3 +1,3 @@
-# MechTour
+# SoonCMP
 
 Mod for tours
