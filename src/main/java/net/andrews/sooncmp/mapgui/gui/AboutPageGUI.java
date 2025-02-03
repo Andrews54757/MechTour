@@ -1,7 +1,7 @@
 package net.andrews.sooncmp.mapgui.gui;
 
 import net.andrews.sooncmp.Configs;
-import net.andrews.sooncmp.mapgui.MapGuiHolder;
+import net.andrews.sooncmp.mapgui.EphemeralMapGui;
 import net.andrews.sooncmp.mapgui.MapRenderer;
 import net.minecraft.world.World;
 
@@ -18,13 +18,13 @@ public class AboutPageGUI extends MapGuiBase {
     public AboutPageGUI() {
         backButton = new SimpleTextButton(Resources.back_text, nav_fillColor, nav_hoverColor, nav_fillTextColor,
                 nav_hoverTextColor);
-        backButton.setClickCallback((boolean isInteract, MapGuiHolder holder) -> {
+        backButton.setClickCallback((boolean isInteract, EphemeralMapGui holder) -> {
             holder.openGui(new GuideMenuGUI());
         });
 
         closeButton = new SimpleTextButton(Resources.close_text, nav_fillColor, nav_hoverColor, nav_fillTextColor,
                 nav_hoverTextColor);
-        closeButton.setClickCallback((boolean isInteract, MapGuiHolder holder) -> {
+        closeButton.setClickCallback((boolean isInteract, EphemeralMapGui holder) -> {
             holder.closePanel();
         });
         addInteractableElement(backButton);
@@ -32,7 +32,7 @@ public class AboutPageGUI extends MapGuiBase {
     }
 
     @Override
-    public void render(MapGuiHolder holder) {
+    public void render(EphemeralMapGui holder) {
         // MapRenderer.fill(holder, (byte) 0);
         // banner = new BitMapImage("banner.png").scaledDimensions(-1,
         // 100).setAlphaCutoff(200).bake();

@@ -1,8 +1,13 @@
-package net.andrews.sooncmp.mapgui.gui;
+package net.andrews.sooncmp.slideshow.gui;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import net.andrews.sooncmp.mapgui.EphemeralMapGui;
+import com.mojang.datafixers.util.Pair;
+
+import net.andrews.sooncmp.slideshow.SlideshowGUI;
+import net.minecraft.server.network.ServerPlayerEntity;
+
 
 public abstract class MapGuiBase {
 
@@ -17,7 +22,7 @@ public abstract class MapGuiBase {
         this.interactableElements.add(element);
     }
 
-    public void render(EphemeralMapGui holder) {
+    public void render(SlideshowGUI holder) {
 
         for (InteractableElement element : this.interactableElements) {
             element.render(holder);
@@ -25,23 +30,35 @@ public abstract class MapGuiBase {
         }
     }
 
-    public void onClose(EphemeralMapGui holder) {
+    public void onClose(SlideshowGUI holder) {
 
     }
 
-    public void onOpen(EphemeralMapGui holder) {
+    public void onOpen(SlideshowGUI holder) {
         this.setReRenderFlag(true);
     }
 
-    public void onMousePosChange(EphemeralMapGui holder, int newMouseX, int newMouseY, int oldMouseX, int oldMouseY) {
+    public void onMousePosChange(SlideshowGUI holder, List<Pair<Integer, Integer>> old_positions_looking_at,
+            List<Pair<Integer, Integer>> positions_looking_at) {
 
         for (InteractableElement element : this.interactableElements) {
-            element.onMousePosChange(holder, newMouseX, newMouseY, oldMouseX, oldMouseY);
+            element.onMousePosChange(holder, old_positions_looking_at, positions_looking_at);
         }
 
     }
 
-    public boolean shouldReRender(EphemeralMapGui holder) {
+
+    public void onClick(ServerPlayerEntity player, Pair<Integer, Integer> mousepos, boolean isInteractKey, SlideshowGUI holder) {
+
+        for (InteractableElement element : this.interactableElements) {
+            if (element.isMouseOnElement(mousepos.getFirst(), mousepos.getSecond())) {
+                element.onClick(player, mousepos, isInteractKey, holder);
+            }
+        }
+
+    }
+
+    public boolean shouldReRender(SlideshowGUI holder) {
         if (shouldRenderAgain)
             return true;
 
@@ -56,16 +73,6 @@ public abstract class MapGuiBase {
 
     public void setReRenderFlag(boolean value) {
         shouldRenderAgain = value;
-    }
-
-    public void onClick(boolean isInteractKey, EphemeralMapGui holder) {
-
-        for (InteractableElement element : this.interactableElements) {
-            if (element.isMouseOver()) {
-                element.onClick(isInteractKey, holder);
-            }
-        }
-
     }
 
     public void onScrollDown() {

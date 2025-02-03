@@ -1,8 +1,11 @@
-package net.andrews.sooncmp.mapgui;
+package net.andrews.sooncmp.slideshow;
 
+import java.util.HashSet;
 import java.util.List;
 
 import net.andrews.sooncmp.Utils;
+import net.andrews.sooncmp.mapgui.Mutable2DRect;
+import net.minecraft.block.entity.VaultBlockEntity.Server;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.MapIdComponent;
 import net.minecraft.entity.data.DataTracker;
@@ -14,16 +17,18 @@ import net.minecraft.item.map.MapState.UpdateData;
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.MapUpdateS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
 public class MapGuiMap {
 
     private MapIdComponent code;
-    private ServerPlayerEntity player;
-
-    private ItemFrameEntity mapEntity = null;
     private ItemStack mapItem;
+
+    private BlockPos pos;
+    private Direction side;
+    private GlowItemFrameEntity frameEntity;
 
     public static int MAP_WIDTH = 128;
     public static int MAP_HEIGHT = 128;
@@ -33,16 +38,21 @@ public class MapGuiMap {
     private Mutable2DRect changedBounds = new Mutable2DRect(0, 0, 0, 0);
     private byte[] prevColors;
 
-    MapGuiMap(MapIdComponent code, EphemeralMapGui holder, ServerPlayerEntity player) {
+    MapGuiMap(MapIdComponent code, ServerWorld world, BlockPos pos, Direction side) {
         this.code = code;
-        this.player = player;
         this.colors = new byte[MAP_WIDTH * MAP_HEIGHT];
         this.prevColors = new byte[MAP_WIDTH * MAP_HEIGHT];
 
+        this.pos = pos;
+        this.side = side;
 
         this.mapItem = new ItemStack(Items.FILLED_MAP);
         this.mapItem.set(DataComponentTypes.MAP_ID, code);
         this.mapItem.setCount(1);
+
+        this.frameEntity = new GlowItemFrameEntity(world, pos, side);
+        this.frameEntity.setInvisible(true);
+        this.frameEntity.setHeldItemStack(this.mapItem, false);
     }
 
     public boolean setPixel(int i, int j, byte color) {
@@ -60,23 +70,20 @@ public class MapGuiMap {
         return changedBounds.getSize() > 0;
     }
 
-    void updateItemFrame(BlockPos pos, Direction side, int x, int y) {
 
-        this.mapEntity = new GlowItemFrameEntity(player.getWorld(), pos, side);
-        this.mapEntity.setInvisible(true);
-        this.mapEntity.setHeldItemStack(this.mapItem, false);
-    }
-
-    void showFrame() {
-        Utils.sendPacket(player, this.mapEntity.createSpawnPacket(null));
-        List<DataTracker.SerializedEntry<?>> list = this.mapEntity.getDataTracker().getChangedEntries();
+    void showFrameToPlayer(ServerPlayerEntity player) {
+        Utils.sendPacket(player, frameEntity.createSpawnPacket(null));
+        List<DataTracker.SerializedEntry<?>> list = frameEntity.getDataTracker().getChangedEntries();
         if (list != null && list.size() > 0) {
-            Utils.sendPacket(player, new EntityTrackerUpdateS2CPacket(this.mapEntity.getId(), list));
+            Utils.sendPacket(player, new EntityTrackerUpdateS2CPacket(frameEntity.getId(), list));
         }
     }
 
-    void sendMapData() {
+    public int getFrameID() {
+        return frameEntity.getId();
+    }
 
+    void sendMapDataDelta(HashSet<ServerPlayerEntity> players) {
         int minX = changedBounds.getMinX();
         int emaxX = changedBounds.getEMaxX();
         int minY = changedBounds.getMinY();
@@ -99,17 +106,25 @@ public class MapGuiMap {
         if (size == 0) {
             return;
         }
-        
+
         byte[] colorsToSend = new byte[size];
-        for (int x = 0; x < changedBounds.getWidth(); x++) {
-            for (int y = 0; y < changedBounds.getHeight(); y++) {
+
+        for (int y = 0; y < changedBounds.getHeight(); y++) {
+            for (int x = 0; x < changedBounds.getWidth(); x++) {
                 colorsToSend[x + y * changedBounds.getWidth()] = colors[x + minX + (y + minY) * MAP_WIDTH];
             }
         }
 
-        UpdateData updateData = new UpdateData(changedBounds.getMinX(), changedBounds.getMinY(), changedBounds.getWidth(), changedBounds.getHeight(), colorsToSend);
-        Utils.sendPacket(player, new MapUpdateS2CPacket(code, MAP_SCALE, false, null, updateData));
+        UpdateData updateData = new UpdateData(changedBounds.getMinX(), changedBounds.getMinY(),
+                changedBounds.getWidth(), changedBounds.getHeight(), colorsToSend);
+        players.forEach(
+                player -> Utils.sendPacket(player, new MapUpdateS2CPacket(code, MAP_SCALE, false, null, updateData)));
         changedBounds.set(0, 0, 0, 0);
+    }
+
+    void sendMapDataFull(ServerPlayerEntity player) {
+        UpdateData updateData = new UpdateData(0, 0, MAP_WIDTH, MAP_HEIGHT, colors);
+        Utils.sendPacket(player, new MapUpdateS2CPacket(code, MAP_SCALE, false, null, updateData));
     }
 
     void forceSend() {
@@ -118,7 +133,8 @@ public class MapGuiMap {
         }
         changedBounds.set(0, 0, MAP_WIDTH, MAP_HEIGHT);
     }
+
     int getEntityId() {
-        return mapEntity.getId();
+        return frameEntity.getId();
     }
 }

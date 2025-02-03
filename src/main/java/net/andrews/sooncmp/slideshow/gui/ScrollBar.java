@@ -1,7 +1,13 @@
-package net.andrews.sooncmp.mapgui.gui;
+package net.andrews.sooncmp.slideshow.gui;
 
-import net.andrews.sooncmp.mapgui.EphemeralMapGui;
-import net.andrews.sooncmp.mapgui.MapRenderer;
+import net.andrews.sooncmp.slideshow.MapRenderer;
+
+import java.util.List;
+
+import net.andrews.sooncmp.mapgui.gui.Resources;
+import net.andrews.sooncmp.slideshow.SlideshowGUI;
+import net.minecraft.server.network.ServerPlayerEntity;
+import com.mojang.datafixers.util.Pair;
 
 public class ScrollBar extends InteractableElement {
 
@@ -28,10 +34,10 @@ public class ScrollBar extends InteractableElement {
         addInteractableElement(scrollDownButton);
 
 
-        scrollUpButton.setClickCallback((boolean i, EphemeralMapGui holder) -> {
+        scrollUpButton.setClickCallback((ServerPlayerEntity player, Pair<Integer, Integer> mousepos, boolean i, SlideshowGUI holder) -> {
             decrementPage();
         });
-        scrollDownButton.setClickCallback((boolean i, EphemeralMapGui holder) -> {
+        scrollDownButton.setClickCallback((ServerPlayerEntity player, Pair<Integer, Integer> mousepos, boolean i, SlideshowGUI holder) -> {
             incrementPage();
         });
 
@@ -58,7 +64,7 @@ public class ScrollBar extends InteractableElement {
     }
 
     @Override
-    public void render(EphemeralMapGui holder) {
+    public void render(SlideshowGUI holder) {
 
         if (totalPages <= 1) {
             return;
@@ -134,9 +140,26 @@ public class ScrollBar extends InteractableElement {
     }
 
     @Override
-    public void onMousePosChange(EphemeralMapGui holder, int newMouseX, int newMouseY, int oldMouseX, int oldMouseY) {
-        super.onMousePosChange(holder, newMouseX, newMouseY, oldMouseX, oldMouseY);
-        int page = isMouseOver() ? getPageFromPos(newMouseY) : -1;
+    public void onMousePosChange(SlideshowGUI holder, List<Pair<Integer, Integer>> old_positions_looking_at, List<Pair<Integer, Integer>> positions_looking_at) {
+        super.onMousePosChange(holder, old_positions_looking_at, positions_looking_at);
+
+        // find first changed pos
+        Pair<Integer, Integer> newPos = null;
+        for (int i = 0; i < positions_looking_at.size(); i++) {
+            Pair<Integer, Integer> pos = positions_looking_at.get(i);
+            if (!this.isMouseOnElement(pos.getFirst(), pos.getSecond())) {
+                continue;
+            }
+
+            newPos = pos;
+            break;
+        }
+
+        if (newPos == null) {
+            return;
+        }
+
+        int page = isMouseOver() ? getPageFromPos(newPos.getSecond()) : -1;
         if (page != hoverPage) {
             this.setHoverPage(page);
         }
@@ -144,12 +167,16 @@ public class ScrollBar extends InteractableElement {
     }
 
     @Override
-    public void onClick(boolean isInteractKey, EphemeralMapGui holder) {
+    public void onClick(ServerPlayerEntity player, Pair<Integer, Integer> mousepos, boolean isInteractKey, SlideshowGUI holder) {
+        int page = isMouseOver() ? getPageFromPos(mousepos.getSecond()) : -1;
+        if (page != hoverPage) {
+            this.setHoverPage(page);
+        }
 
         if (hoverPage != -1 && hoverPage != currentPage) {
             this.setCurrentPage(hoverPage);
         }
-        super.onClick(isInteractKey, holder);
+        super.onClick(player, mousepos, isInteractKey, holder);
     }
 
     public int getDisplayPage() {

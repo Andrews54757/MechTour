@@ -1,12 +1,14 @@
-package net.andrews.sooncmp.mapgui.gui;
+package net.andrews.sooncmp.slideshow.gui;
 
-import net.andrews.sooncmp.mapgui.BitMapImage;
-import net.andrews.sooncmp.mapgui.EphemeralMapGui;
-import net.andrews.sooncmp.mapgui.MapRenderer;
+import java.util.List;
+
+import com.mojang.datafixers.util.Pair;
+
 import net.andrews.sooncmp.mapgui.MapText;
+import net.andrews.sooncmp.slideshow.MapRenderer;
+import net.andrews.sooncmp.slideshow.SlideshowGUI;
 
-public class SimpleTextIconButton extends InteractableElement {
-    private BitMapImage image;
+public class SimpleTextButton extends InteractableElement {
     private MapText text;
     private int x;
     private int y;
@@ -16,10 +18,10 @@ public class SimpleTextIconButton extends InteractableElement {
     private byte hoverColor;
     private byte textColor;
     private byte hoverTextColor;
+    private boolean textHidden = false;
 
-    SimpleTextIconButton(BitMapImage image, MapText text, byte fillColor, byte hoverColor, byte textColor, byte hoverTextColor) {
+    SimpleTextButton(MapText text, byte fillColor, byte hoverColor, byte textColor, byte hoverTextColor) {
 
-        this.image = image;
         this.text = text;
       
         this.fillColor = fillColor;
@@ -37,8 +39,12 @@ public class SimpleTextIconButton extends InteractableElement {
         this.setInteractionBounds(x, y, x + width, y + height);
     }
 
+    public void setTextHidden(boolean h) {
+        this.textHidden = h;
+    }
+
     @Override
-    public void render(EphemeralMapGui holder) {
+    public void render(SlideshowGUI holder) {
         
         byte color = this.isMouseOver() ? hoverColor : fillColor;
 
@@ -46,20 +52,20 @@ public class SimpleTextIconButton extends InteractableElement {
 
         MapRenderer.fill(holder, x, y, width, height, color);
 
-        MapRenderer.drawText(holder, text, x + width/2 - text.getWidth()/2, y + height * 3/4 - text.getHeight() / 2, tcolor);
-        MapRenderer.drawImage(holder, image, x + width/2 - image.getWidth()/2, y + height*1/3 - image.getHeight()/2);
+        if (!textHidden)
+            MapRenderer.drawText(holder, text, x + width/2 - text.getWidth()/2, y + height/2 - text.getHeight() / 2, tcolor);
 
 
     }
+    
 
     @Override
-    public void onMouseOver(EphemeralMapGui holder, int mouseX, int mouseY) {
-        
+    public void onMouseOver(SlideshowGUI holder, List<Pair<Integer, Integer>> positions_looking_at) {        
        this.setReRenderFlag(true);
     }
 
     @Override
-    public void onMouseOut(EphemeralMapGui holder, int mouseX, int mouseY) {
+    public void onMouseOut(SlideshowGUI holder, List<Pair<Integer, Integer>> positions_looking_at) {
         this.setReRenderFlag(true);
     }
 }

@@ -2,7 +2,7 @@ package net.andrews.sooncmp.mapgui.gui;
 
 import net.andrews.sooncmp.SoonCMPMod;
 import net.andrews.sooncmp.mapgui.BitMapImage;
-import net.andrews.sooncmp.mapgui.MapGuiHolder;
+import net.andrews.sooncmp.mapgui.EphemeralMapGui;
 import net.andrews.sooncmp.mapgui.MapRenderer;
 import net.andrews.sooncmp.mapgui.MapText;
 import net.andrews.sooncmp.waypoint.Waypoint;
@@ -54,13 +54,13 @@ public class WaypointsMenuGui extends MapGuiBase {
         pageHolder = new int[] { 0, 0, 0 };
         backButton = new SimpleTextButton(Resources.back_text, nav_fillColor, nav_hoverColor, nav_fillTextColor,
                 nav_hoverTextColor);
-        backButton.setClickCallback((boolean isInteract, MapGuiHolder holder) -> {
+        backButton.setClickCallback((boolean isInteract, EphemeralMapGui holder) -> {
             holder.openGui(new GuideMenuGUI());
         });
 
         closeButton = new SimpleTextButton(Resources.close_text, nav_fillColor, nav_hoverColor, nav_fillTextColor,
                 nav_hoverTextColor);
-        closeButton.setClickCallback((boolean isInteract, MapGuiHolder holder) -> {
+        closeButton.setClickCallback((boolean isInteract, EphemeralMapGui holder) -> {
             holder.closePanel();
         });
         addInteractableElement(backButton);
@@ -73,13 +73,13 @@ public class WaypointsMenuGui extends MapGuiBase {
         dimension_end_button = new SimpleTextButton(Resources.dimension_end_title, end_color, end_color,
                 tab_fillTextColor, tab_hoverTextColor);
 
-        dimension_overworld_button.setClickCallback((boolean isInteract, MapGuiHolder holder) -> {
+        dimension_overworld_button.setClickCallback((boolean isInteract, EphemeralMapGui holder) -> {
             setDimensionTab(DimensionTab.OVERWORLD);
         });
-        dimension_nether_button.setClickCallback((boolean isInteract, MapGuiHolder holder) -> {
+        dimension_nether_button.setClickCallback((boolean isInteract, EphemeralMapGui holder) -> {
             setDimensionTab(DimensionTab.NETHER);
         });
-        dimension_end_button.setClickCallback((boolean isInteract, MapGuiHolder holder) -> {
+        dimension_end_button.setClickCallback((boolean isInteract, EphemeralMapGui holder) -> {
             setDimensionTab(DimensionTab.END);
         });
         addInteractableElement(dimension_overworld_button);
@@ -92,7 +92,7 @@ public class WaypointsMenuGui extends MapGuiBase {
     }
 
     @Override
-    public void render(MapGuiHolder holder) {
+    public void render(EphemeralMapGui holder) {
         if (currentDimensionTab == null)
             setDimensionTab(DimensionTab.getDimensionTab(holder.getPlayer().getWorld()));
         MapRenderer.fill(holder, (byte) 0);
@@ -180,7 +180,7 @@ public class WaypointsMenuGui extends MapGuiBase {
 
     }
 
-    private int getItemFromPos(MapGuiHolder holder, int x, int y) {
+    private int getItemFromPos(EphemeralMapGui holder, int x, int y) {
         int width = holder.getPanelPixelWidth() - 30 - (pages <= 1 ? 0 : 30);
         int height = holder.getPanelPixelHeight() - 110;
 
@@ -217,7 +217,7 @@ public class WaypointsMenuGui extends MapGuiBase {
     }
 
     @Override
-    public void onMousePosChange(MapGuiHolder holder, int newMouseX, int newMouseY, int oldMouseX, int oldMouseY) {
+    public void onMousePosChange(EphemeralMapGui holder, int newMouseX, int newMouseY, int oldMouseX, int oldMouseY) {
 
         int box = this.getItemFromPos(holder, newMouseX, newMouseY);
         if (box != currentBox) {
@@ -228,7 +228,7 @@ public class WaypointsMenuGui extends MapGuiBase {
     }
 
     @Override
-    public void onClick(boolean isInteractKey, MapGuiHolder holder) {
+    public void onClick(boolean isInteractKey, EphemeralMapGui holder) {
         Waypoint waypoint = getWaypoint();
         if (waypoint != null) {
 
@@ -292,13 +292,13 @@ public class WaypointsMenuGui extends MapGuiBase {
     }
 
     @Override
-    public void onOpen(MapGuiHolder holder) {
+    public void onOpen(EphemeralMapGui holder) {
         SoonCMPMod.waypointManager.beginTrack(this);
         super.onOpen(holder);
     }
 
     @Override
-    public void onClose(MapGuiHolder holder) {
+    public void onClose(EphemeralMapGui holder) {
         SoonCMPMod.waypointManager.stopTrack(this);
         super.onClose(holder);
     }

@@ -1,7 +1,7 @@
 package net.andrews.sooncmp.mapgui.gui;
 
 import net.andrews.sooncmp.mapgui.IClickCallback;
-import net.andrews.sooncmp.mapgui.MapGuiHolder;
+import net.andrews.sooncmp.mapgui.EphemeralMapGui;
 import net.andrews.sooncmp.mapgui.Mutable2DRect;
 
 public abstract class InteractableElement extends MapGuiBase {
@@ -21,7 +21,7 @@ public abstract class InteractableElement extends MapGuiBase {
         onClickCallback = callback;
     }
 
-    public void onClick(boolean isInteractKey, MapGuiHolder holder) {
+    public void onClick(boolean isInteractKey, EphemeralMapGui holder) {
         if (onClickCallback != null) {
             onClickCallback.call(isInteractKey, holder);
         }
@@ -33,7 +33,7 @@ public abstract class InteractableElement extends MapGuiBase {
     }
 
     @Override
-    public void onMousePosChange(MapGuiHolder holder, int newMouseX, int newMouseY, int oldMouseX, int oldMouseY) {
+    public void onMousePosChange(EphemeralMapGui holder, int newMouseX, int newMouseY, int oldMouseX, int oldMouseY) {
         if (isMouseOnElement(newMouseX, newMouseY)) {
             if (!isMouseOver) {
                 isMouseOver = true;
@@ -51,19 +51,19 @@ public abstract class InteractableElement extends MapGuiBase {
         
     }
 
-    public void onMouseEnter(MapGuiHolder holder, int mouseX, int mouseY) {
+    public void onMouseEnter(EphemeralMapGui holder, int mouseX, int mouseY) {
 
     }
 
-    public void onMouseExit(MapGuiHolder holder, int mouseX, int mouseY) {
+    public void onMouseExit(EphemeralMapGui holder, int mouseX, int mouseY) {
 
     }
 
-    public void onMouseOver(MapGuiHolder holder, int mouseX, int mouseY) {
+    public void onMouseOver(EphemeralMapGui holder, int mouseX, int mouseY) {
 
     }
 
-    public void onMouseOut(MapGuiHolder holder, int mouseX, int mouseY) {
+    public void onMouseOut(EphemeralMapGui holder, int mouseX, int mouseY) {
 
     }
 

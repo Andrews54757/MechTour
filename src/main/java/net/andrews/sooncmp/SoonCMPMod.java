@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -12,16 +13,21 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import net.andrews.sooncmp.mapgui.MapGuiHolder;
+import net.andrews.sooncmp.mapgui.EphemeralMapGui;
 import net.andrews.sooncmp.mapgui.gui.GuideMenuGUI;
 import net.andrews.sooncmp.mapgui.gui.Resources;
 import net.andrews.sooncmp.mapgui.gui.WaypointsMenuGui;
+import net.andrews.sooncmp.slideshow.SlideshowConfig;
+import net.andrews.sooncmp.slideshow.SlideshowGUI;
+import net.andrews.sooncmp.slideshow.SlideshowManager;
 import net.andrews.sooncmp.waypoint.Waypoint;
 import net.andrews.sooncmp.waypoint.WaypointIcons;
 import net.andrews.sooncmp.waypoint.WaypointManager;
 import net.minecraft.command.CommandSource;
+import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.DimensionArgumentType;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.Vec3ArgumentType;
@@ -47,11 +53,17 @@ import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 
 public class SoonCMPMod {
-    private static HashMap<ServerPlayerEntity, MapGuiHolder> guiHolders = new HashMap<>();
+    private static HashMap<ServerPlayerEntity, EphemeralMapGui> guiHolders = new HashMap<>();
 
     private static HashMap<String, PlayerInfo> playerInfos = new HashMap<>();
 
+    private static ArrayList<SlideshowGUI> slideshowGUIs = new ArrayList<>();
+
     public static WaypointManager waypointManager;
+
+    public static SlideshowManager slideshowManager;
+
+    public static boolean shouldInit = false;
 
     public static void init() {
 
@@ -68,14 +80,16 @@ public class SoonCMPMod {
         Resources.noop();
         WaypointIcons.noop();
         waypointManager = new WaypointManager();
+        slideshowManager = new SlideshowManager();
+        shouldInit = true;
 
         dispatcher.register(CommandManager.literal("sooncmp").requires((serverCommandSource) -> {
             return serverCommandSource.hasPermissionLevel(2);
         })
-            .then(CommandManager.literal("config").then(CommandManager.argument("name", StringArgumentType.word())
-                    .suggests((c, b) -> CommandSource.suggestMatching(Configs.getFields(), b)).then(CommandManager
-                            .argument("value", StringArgumentType.greedyString()).executes(SoonCMPMod::setConfig))
-                    .executes(SoonCMPMod::getConfig)))
+                .then(CommandManager.literal("config").then(CommandManager.argument("name", StringArgumentType.word())
+                        .suggests((c, b) -> CommandSource.suggestMatching(Configs.getFields(), b)).then(CommandManager
+                                .argument("value", StringArgumentType.greedyString()).executes(SoonCMPMod::setConfig))
+                        .executes(SoonCMPMod::getConfig)))
 
         );
 
@@ -155,6 +169,13 @@ public class SoonCMPMod {
                                         .executes(SoonCMPMod::reloadCommand))
                                 .executes(SoonCMPMod::openGuiCommand));
 
+        dispatcher.register(CommandManager.literal("slideshow").requires((serverCommandSource) -> {
+            return serverCommandSource.hasPermissionLevel(2);
+        }).then(CommandManager.literal("place").then(CommandManager.argument("pos1", BlockPosArgumentType.blockPos())
+                .then(CommandManager.argument("pos2", BlockPosArgumentType.blockPos())
+                        .executes(SoonCMPMod::openSlideshowCommand))))
+                .then(CommandManager.literal("remove").executes(SoonCMPMod::removeSlideshowCommand)));
+
         dispatcher.register(CommandManager.literal("tpw").requires((serverCommandSource) -> {
             return serverCommandSource.hasPermissionLevel(2);
         }).then(CommandManager
@@ -183,6 +204,83 @@ public class SoonCMPMod {
         sendFeedback(ctx, str, false);
     }
 
+    private static int openSlideshowCommand(CommandContext<ServerCommandSource> ctx) {
+        try {
+            ServerPlayerEntity player = ctx.getSource().getPlayer();
+            if (player == null) {
+                sendFeedback(ctx, "You must be a player to use this command!", true);
+                return 1;
+            }
+
+            BlockPos pos1 = BlockPosArgumentType.getBlockPos(ctx, "pos1");
+            BlockPos pos2 = BlockPosArgumentType.getBlockPos(ctx, "pos2");
+
+            BlockPos minPos = BlockPos.min(pos1, pos2);
+            BlockPos maxPos = BlockPos.max(pos1, pos2);
+            BlockPos diff = maxPos.subtract(minPos);
+            if (diff.getX() != 0 && diff.getZ() != 0) {
+                sendFeedback(ctx, "You must select a 2D area!", true);
+                return 1;
+            }
+
+            int width = diff.getX() + diff.getZ() + 1;
+            int height = diff.getY() + 1;
+            if (width * height > 512) {
+                sendFeedback(ctx, "You must select an area smaller than 512 blocks!", true);
+                return 1;
+            }
+
+            Direction facing = player.getHorizontalFacing().getOpposite();
+            SlideshowConfig config = new SlideshowConfig(player.getWorld().getRegistryKey().getValue().getPath(),
+                    minPos.getX(), minPos.getY(), minPos.getZ(), width, height, facing.getName());
+            if (slideshowManager.hasSlideshow(config)) {
+                sendFeedback(ctx, "There is already a slideshow here!", true);
+                return 1;
+            }
+            slideshowManager.addSlideshow(config);
+            slideshowGUIs.add(new SlideshowGUI(player.getServer(), config));
+            sendFeedback(ctx, "Opened slideshow!", true);
+        } catch (Exception e) {
+            sendFeedback(ctx, "An error has occured: " + e, true);
+        }
+        return 1;
+    }
+
+    private static int removeSlideshowCommand(CommandContext<ServerCommandSource> ctx) {
+        try {
+            ServerPlayerEntity player = ctx.getSource().getPlayer();
+            if (player == null) {
+                sendFeedback(ctx, "You must be a player to use this command!", true);
+                return 1;
+            }
+
+            SlideshowGUI gui = null;
+            for (SlideshowGUI g : slideshowGUIs) {
+                if (!shouldPlayerBeInSlideshow(player, g)) {
+                    continue;
+                }
+
+                if (g.getMousePosForPlayer(player) != null) {
+                    gui = g;
+                    break;
+                }
+            }
+
+            if (gui == null) {
+                sendFeedback(ctx, "You must be looking at a slideshow!", true);
+                return 1;
+            }
+
+            slideshowManager.removeSlideshow(gui.getConfig());
+            gui.closePanel();
+            slideshowGUIs.remove(gui);
+            sendFeedback(ctx, "Removed slideshow!", true);
+        } catch (Exception e) {
+            sendFeedback(ctx, "An error has occured: " + e, true);
+        }
+        return 1;
+    }
+
     private static int openGuiCommand(CommandContext<ServerCommandSource> ctx) {
         try {
             if (Configs.configs.disableGui) {
@@ -193,6 +291,7 @@ public class SoonCMPMod {
             if (player != null) {
                 openGuideGUI(player);
             }
+
         } catch (Exception e) {
             sendFeedback(ctx, "An error has occured: " + e, true);
 
@@ -409,7 +508,7 @@ public class SoonCMPMod {
 
     private static int removeWaypoint2(CommandContext<ServerCommandSource> ctx) {
         try {
-            MapGuiHolder holder = guiHolders.get(ctx.getSource().getPlayer());
+            EphemeralMapGui holder = guiHolders.get(ctx.getSource().getPlayer());
 
             if (holder == null || !holder.isPanelOpen() || holder.getGui() == null
                     || !(holder.getGui() instanceof WaypointsMenuGui)) {
@@ -444,7 +543,7 @@ public class SoonCMPMod {
                 return 1;
             }
 
-            MapGuiHolder holder = guiHolders.get(ctx.getSource().getPlayer());
+            EphemeralMapGui holder = guiHolders.get(ctx.getSource().getPlayer());
 
             if (holder == null || !holder.isPanelOpen() || holder.getGui() == null
                     || !(holder.getGui() instanceof WaypointsMenuGui)) {
@@ -484,7 +583,7 @@ public class SoonCMPMod {
                 return 1;
             }
 
-            MapGuiHolder holder = guiHolders.get(ctx.getSource().getPlayer());
+            EphemeralMapGui holder = guiHolders.get(ctx.getSource().getPlayer());
 
             if (holder == null || !holder.isPanelOpen() || holder.getGui() == null
                     || !(holder.getGui() instanceof WaypointsMenuGui)) {
@@ -538,7 +637,7 @@ public class SoonCMPMod {
                 return 1;
             }
 
-            MapGuiHolder holder = guiHolders.get(ctx.getSource().getPlayer());
+            EphemeralMapGui holder = guiHolders.get(ctx.getSource().getPlayer());
 
             if (holder == null || !holder.isPanelOpen() || holder.getGui() == null
                     || !(holder.getGui() instanceof WaypointsMenuGui)) {
@@ -578,7 +677,7 @@ public class SoonCMPMod {
                 return 1;
             }
 
-            MapGuiHolder holder = guiHolders.get(ctx.getSource().getPlayer());
+            EphemeralMapGui holder = guiHolders.get(ctx.getSource().getPlayer());
 
             if (holder == null || !holder.isPanelOpen() || holder.getGui() == null
                     || !(holder.getGui() instanceof WaypointsMenuGui)) {
@@ -619,7 +718,7 @@ public class SoonCMPMod {
                 return 1;
             }
 
-            MapGuiHolder holder = guiHolders.get(ctx.getSource().getPlayer());
+            EphemeralMapGui holder = guiHolders.get(ctx.getSource().getPlayer());
 
             if (holder == null || !holder.isPanelOpen() || holder.getGui() == null
                     || !(holder.getGui() instanceof WaypointsMenuGui)) {
@@ -690,10 +789,44 @@ public class SoonCMPMod {
         return 1;
     }
 
+    public static boolean shouldPlayerBeInSlideshow(ServerPlayerEntity player, SlideshowGUI gui) {
+        if (player.isDisconnected() || !player.isAlive())
+            return false;
+        if (player.getServerWorld() != gui.getPanelWorld())
+            return false;
+        if (!player.getBlockPos().isWithinDistance(gui.getPanelOpenPos(), 100))
+            return false;
+        // check if player is in front
+        BlockPos playerPos = player.getBlockPos();
+        BlockPos panelPos = gui.getPanelOpenPos();
+        Direction facing = gui.getPanelFacingSide();
+
+        if (facing == Direction.NORTH) {
+            if (playerPos.getZ() > panelPos.getZ())
+                return false;
+        } else if (facing == Direction.SOUTH) {
+            if (playerPos.getZ() < panelPos.getZ())
+                return false;
+        } else if (facing == Direction.EAST) {
+            if (playerPos.getX() < panelPos.getX())
+                return false;
+        } else if (facing == Direction.WEST) {
+            if (playerPos.getX() > panelPos.getX())
+                return false;
+        }
+        return true;
+    }
+
     public static void onBeforeTick(MinecraftServer minecraftServer) {
-        Iterator<MapGuiHolder> guis = guiHolders.values().iterator();
+        if (shouldInit) {
+            shouldInit = false;
+            slideshowManager.getSlideshows().forEach(config -> {
+                slideshowGUIs.add(new SlideshowGUI(minecraftServer, config));
+            });
+        }
+        Iterator<EphemeralMapGui> guis = guiHolders.values().iterator();
         while (guis.hasNext()) {
-            MapGuiHolder gui = guis.next();
+            EphemeralMapGui gui = guis.next();
             if (gui.shouldRemove()) {
                 gui.closeGui();
                 gui.closePanel();
@@ -703,11 +836,31 @@ public class SoonCMPMod {
             }
         }
 
+        // check if need to add/remove players from slideshows
+        slideshowGUIs.forEach(gui -> {
+            minecraftServer.getPlayerManager().getPlayerList().forEach(player -> {
+                if (shouldPlayerBeInSlideshow(player, gui)) {
+                    gui.addPlayer(player);
+                } else {
+                    gui.removePlayer(player);
+                }
+            });
+        });
+
+        Iterator<SlideshowGUI> slideshows = slideshowGUIs.iterator();
+        while (slideshows.hasNext()) {
+            SlideshowGUI gui = slideshows.next();
+            gui.tick();
+        }
+
         Iterator<PlayerInfo> infos = playerInfos.values().iterator();
         while (infos.hasNext()) {
             PlayerInfo info = infos.next();
 
             if (info.player.isDisconnected()) {
+                slideshowGUIs.forEach(gui -> {
+                    gui.removePlayer(info.player);
+                });
                 infos.remove();
             } else {
                 if (info.teleportCooldown > 0)
@@ -723,11 +876,18 @@ public class SoonCMPMod {
 
         ServerPlayerEntity player = serverPlayNetworkHandler.player;
 
-        MapGuiHolder holder = guiHolders.get(player);
+        EphemeralMapGui holder = guiHolders.get(player);
         if (holder != null) {
             if (holder.onUpdateSelectedSlot(serverPlayNetworkHandler, selectedSlot)) {
 
                 return;
+            }
+        }
+
+        // check slideshow
+        for (SlideshowGUI gui : slideshowGUIs) {
+            if (shouldPlayerBeInSlideshow(player, gui) && gui.getMousePosForPlayer(player) != null) {
+                gui.onUpdateSelectedSlot(serverPlayNetworkHandler, selectedSlot);
             }
         }
     }
@@ -739,9 +899,9 @@ public class SoonCMPMod {
 
     public static void openGuideGUI(ServerPlayerEntity player) {
         ((ThreadExecutor<?>) player.getServer()).execute(() -> {
-            MapGuiHolder holder = guiHolders.get(player);
+            EphemeralMapGui holder = guiHolders.get(player);
             if (holder == null) {
-                holder = new MapGuiHolder(player);
+                holder = new EphemeralMapGui(player);
                 holder.openGui(new GuideMenuGUI());
                 guiHolders.put(player, holder);
             }
@@ -761,18 +921,45 @@ public class SoonCMPMod {
         });
     }
 
-    public static void onInteractClick(ServerPlayerEntity player, CallbackInfoReturnable<ActionResult> ci) {
+    public static void onInteractItem(ServerPlayerEntity player, CallbackInfoReturnable<ActionResult> ci) {
 
         PlayerInfo info = getPlayerInfo(player);
-        if (info.clickCooldown > 0) {
-            return;
-        }
-        MapGuiHolder holder = guiHolders.get(player);
+
+        EphemeralMapGui holder = guiHolders.get(player);
         if (holder != null && holder.isTrackingPanel()) {
-            info.clickCooldown = 6;
-            holder.onInteractClick();
+            if (info.clickCooldown > 0) {
+                info.clickCooldown = 6;
+                holder.onInteractClick();
+            }
             ci.setReturnValue(ActionResult.CONSUME);
             return;
+        }
+
+        for (SlideshowGUI gui : slideshowGUIs) {
+            if (shouldPlayerBeInSlideshow(player, gui) && gui.getMousePosForPlayer(player) != null) {
+                if (info.clickCooldown > 0) {
+                    info.clickCooldown = 6;
+                    gui.onInteractClick(player);
+                }
+                ci.setReturnValue(ActionResult.CONSUME);
+                return;
+            }
+        }
+    }
+
+    public static void onBlockBreak(ServerPlayerEntity player, CallbackInfo ci) {
+        EphemeralMapGui holder = guiHolders.get(player);
+        if (holder != null && holder.isTrackingPanel()) {
+
+            ci.cancel();
+            return;
+        }
+
+        for (SlideshowGUI gui : slideshowGUIs) {
+            if (shouldPlayerBeInSlideshow(player, gui) && gui.getMousePosForPlayer(player) != null) {
+                ci.cancel();
+                return;
+            }
         }
     }
 
@@ -783,11 +970,19 @@ public class SoonCMPMod {
             return;
         }
 
-        MapGuiHolder holder = guiHolders.get(player);
+        EphemeralMapGui holder = guiHolders.get(player);
         if (holder != null && holder.isTrackingPanel()) {
             info.clickCooldown = 6;
             holder.onSwingClick();
             return;
+        }
+
+        for (SlideshowGUI gui : slideshowGUIs) {
+            if (shouldPlayerBeInSlideshow(player, gui) && gui.getMousePosForPlayer(player) != null) {
+                info.clickCooldown = 6;
+                gui.onSwingClick(player);
+                return;
+            }
         }
     }
 
@@ -812,7 +1007,8 @@ public class SoonCMPMod {
             dimension = "DIM1";
         }
 
-        String link = Configs.configs.mapUrlBase + "/?worldname=" + dimension + "&mapname=flat&zoom=5&x=" + player.getBlockPos().getX() + "&y=64&z="
+        String link = Configs.configs.mapUrlBase + "/?worldname=" + dimension + "&mapname=flat&zoom=5&x="
+                + player.getBlockPos().getX() + "&y=64&z="
                 + player.getBlockPos().getZ();
 
         player.sendMessage(Text.Serialization.fromJson(
@@ -858,7 +1054,6 @@ public class SoonCMPMod {
             teleportToWaypointInternal(player, waypoint, broadcast);
         });
     }
-
 
     public static void teleportToSpawn(ServerPlayerEntity player) {
 

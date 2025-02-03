@@ -11,8 +11,20 @@ public class Resources {
     public static BitMapImage banner = new BitMapImage("banner.png").scaledDimensions(-1, 100).setAlphaCutoff(200)
     .bake();
 
+    public static BitMapImage welcome = new BitMapImage("welcome.png").scaledDimensions(-1, 200).setAlphaCutoff(100)
+    .bake();
+
+    public static BitMapImage slideshow_icon = new BitMapImage("slideshow_icon.png").scaledDimensions(-1, 64)
+        .setAlphaCutoff(250).setColor(1, 163, 88).bake();
+        
+    
+    public static MapText slideshow_text_loading = new MapText("Loading slide...", new Font("Arial", Font.PLAIN, 40));
+    public static MapText slideshow_text_no_slides = new MapText("No slides found!", new Font("Arial", Font.PLAIN, 40));
+
+    public static MapText slideshow_text_failed = new MapText("Failed to retrieve slide!", new Font("Arial", Font.PLAIN, 40));
+
     public static BitMapImage teleport_icon = new BitMapImage("tp_icon.png").scaledDimensions(-1, 100)
-    .setAlphaCutoff(250).setColor(29, 113, 173).bake();
+        .setAlphaCutoff(250).setColor(29, 113, 173).bake();
 
     public static MapText teleport_text = new MapText("TP to Spawn", new Font("Arial", Font.PLAIN, 40));
 
@@ -31,6 +43,8 @@ public class Resources {
     public static MapText about_title = new MapText("About", new Font("Arial", Font.PLAIN, 70));
 
     public static MapText waypoints_title = new MapText("Waypoints", new Font("Arial", Font.PLAIN, 45));
+
+    public static MapText presentations_title = new MapText("Presentations", new Font("Arial", Font.PLAIN, 45));
 
     public static MapText dimension_overworld_title = new MapText("Overworld", new Font("Arial", Font.PLAIN, 20));
     public static MapText dimension_nether_title = new MapText("Nether", new Font("Arial", Font.PLAIN, 20));

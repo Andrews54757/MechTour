@@ -16,7 +16,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Direction.Axis;
 
-public class MapGuiHolder {
+public class EphemeralMapGui {
     private ServerPlayerEntity player;
     private ArrayList<MapGuiMap> maps = new ArrayList<>();
     private boolean panelOpen;
@@ -45,7 +45,7 @@ public class MapGuiHolder {
 
     private static int PREFIX = 1000000000;
 
-    public MapGuiHolder(ServerPlayerEntity player) {
+    public EphemeralMapGui(ServerPlayerEntity player) {
         this.player = player;
         this.panelOpen = false;
 

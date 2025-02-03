@@ -27,52 +27,67 @@ public class BitMapImage {
     private boolean matchSlow = false;
 
     public BitMapImage(String image) {
-       // image = image.replaceAll("\\/","");
-        
+        // image = image.replaceAll("\\/","");
+
         Path path = FabricLoader.getInstance().getConfigDir().resolve("sooncmp/" + image);
         try {
             toProcess = ImageIO.read(new File(path.toString()));
 
-        //    System.out.println("[SoonCMP] Loaded " + image);
+            // System.out.println("[SoonCMP] Loaded " + image);
         } catch (IOException e) {
             System.out.println("[SoonCMP] Could not read image " + image + " - " + e);
         }
     }
+
+    public boolean hasImage() {
+        return toProcess != null;
+    }
+
     public BitMapImage(BufferedImage image) {
         toProcess = image;
     }
+
+    public int getUnprocessedWidth() {
+        return toProcess.getWidth();
+    }
+
+    public int getUnprocessedHeight() {
+        return toProcess.getHeight();
+    }
+
     public BitMapImage scaledDimensions(int width, int height) {
-        if (toProcess == null) return this;
-            double aspectRatio = (double)toProcess.getWidth() / (double)toProcess.getHeight();
-
-            if (width == -1) {
-                width = (int)(aspectRatio * height);
-            }
-
-            if (height == -1) {
-                height = (int)(width / aspectRatio);
-            }
-
-            if (width <= 0 || height <= 0) {
-
-                System.out.println("Failed to load image " + toProcess.getWidth() +"," + toProcess.getHeight() + " - " + aspectRatio);
-                this.toProcess = null;
-                return this;
-            }
-
-            BufferedImage newImage = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
-
-            
-            Graphics2D g = newImage.createGraphics();
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-            g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
-            g.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
-            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-            g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-            g.drawImage(toProcess , 0, 0, width, height, null);
-            g.dispose();
-            toProcess = newImage;
+        if (toProcess == null)
             return this;
+        double aspectRatio = (double) toProcess.getWidth() / (double) toProcess.getHeight();
+
+        if (width == -1) {
+            width = (int) (aspectRatio * height);
+        }
+
+        if (height == -1) {
+            height = (int) (width / aspectRatio);
+        }
+
+        if (width <= 0 || height <= 0) {
+
+            System.out.println(
+                    "Failed to load image " + toProcess.getWidth() + "," + toProcess.getHeight() + " - " + aspectRatio);
+            this.toProcess = null;
+            return this;
+        }
+
+        BufferedImage newImage = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
+
+        Graphics2D g = newImage.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+        g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
+        g.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+        g.drawImage(toProcess, 0, 0, width, height, null);
+        g.dispose();
+        toProcess = newImage;
+        return this;
     }
 
     public BitMapImage setAlphaCutoff(int cutoff) {
@@ -81,7 +96,8 @@ public class BitMapImage {
     }
 
     public BitMapImage bake() {
-        if (toProcess == null) return this;
+        if (toProcess == null)
+            return this;
         this.width = toProcess.getWidth();
         this.height = toProcess.getHeight();
         this.size = this.width * this.height;
@@ -104,12 +120,12 @@ public class BitMapImage {
             int r = pixels[pixel + offset + 2] & 0xFF;
 
             if (color != null) {
-               
-                double brightness = (double)(r + g + b) / 3.0 / 255.0;
 
-                r = (int)((double)color[0] * brightness);
-                g = (int)((double)color[1] * brightness);
-                b = (int)((double)color[2] * brightness);
+                double brightness = (double) (r + g + b) / 3.0 / 255.0;
+
+                r = (int) ((double) color[0] * brightness);
+                g = (int) ((double) color[1] * brightness);
+                b = (int) ((double) color[2] * brightness);
             }
 
             if (a <= alphaCutoff) {
@@ -127,17 +143,21 @@ public class BitMapImage {
     public byte[] getMapImage() {
         return mapImage;
     }
+
     public int getWidth() {
         return width;
     }
+
     public int getHeight() {
         return height;
     }
+
     public BitMapImage setColor(int i, int j, int k) {
-        color = new int[] {i,j,k};
+        color = new int[] { i, j, k };
         return this;
 
     }
+
     public BitMapImage setMatchSlow(boolean matchSlow) {
         this.matchSlow = matchSlow;
         return this;

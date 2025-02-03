@@ -2,25 +2,23 @@ package net.andrews.sooncmp.mapgui.gui;
 
 import net.andrews.sooncmp.Configs;
 import net.andrews.sooncmp.SoonCMPMod;
-import net.andrews.sooncmp.mapgui.MapGuiHolder;
+import net.andrews.sooncmp.mapgui.EphemeralMapGui;
 import net.andrews.sooncmp.mapgui.MapRenderer;
+import net.andrews.sooncmp.mapgui.color.MapColors;
 
 public class GuideMenuGUI extends MapGuiBase {
 
-
-    private static byte fillColor = 124;
-    private static byte hoverColor = 40;
-    private static byte fillTextColor = 84;
-    private static byte hoverTextColor = 87;
-
-
+    private static byte fillColor = MapColors.DIAMOND;
+    private static byte hoverColor = MapColors.DIRT;
+    private static byte fillTextColor = MapColors.COLOR_GRAY;
+    private static byte hoverTextColor = MapColors.COLOR_GRAY + MapColors.DARKEST_COLOR;
 
     private SimpleTextIconButton teleportButton;
     private SimpleTextIconButton waypointsButton;
     private SimpleTextIconButton mapButton;
     private SimpleTextIconButton aboutButton;
 
-    private static byte nav_fillColor = 0;
+    private static byte nav_fillColor = MapColors.NONE;
     private static byte nav_hoverColor = 4;
     private static byte nav_fillTextColor = 0;
     private static byte nav_hoverTextColor = 87;
@@ -39,11 +37,11 @@ public class GuideMenuGUI extends MapGuiBase {
         aboutButton = new SimpleTextIconButton(Resources.about_icon, Resources.about_text, fillColor, hoverColor, fillTextColor,
                 hoverTextColor);
 
-        teleportButton.setClickCallback((boolean isInteract, MapGuiHolder holder) -> {
+        teleportButton.setClickCallback((boolean isInteract, EphemeralMapGui holder) -> {
            SoonCMPMod.teleportToSpawn(holder.getPlayer());
         });
 
-        waypointsButton.setClickCallback((boolean isInteract, MapGuiHolder holder) -> {
+        waypointsButton.setClickCallback((boolean isInteract, EphemeralMapGui holder) -> {
             if (Configs.configs.disableWaypoints) {
                 SoonCMPMod.sendActionBarMessage(holder.getPlayer(), "Waypoints are disabled!");
                 return;
@@ -51,11 +49,11 @@ public class GuideMenuGUI extends MapGuiBase {
             holder.openGui(new WaypointsMenuGui());
         });
 
-        mapButton.setClickCallback((boolean isInteract, MapGuiHolder holder) -> {
+        mapButton.setClickCallback((boolean isInteract, EphemeralMapGui holder) -> {
             SoonCMPMod.sendMapLink(holder.getPlayer());
         });
 
-        aboutButton.setClickCallback((boolean isInteract, MapGuiHolder holder) -> {
+        aboutButton.setClickCallback((boolean isInteract, EphemeralMapGui holder) -> {
             holder.openGui(new AboutPageGUI());
         });
 
@@ -68,7 +66,7 @@ public class GuideMenuGUI extends MapGuiBase {
        // addInteractableElement(backButton);
 
         closeButton = new SimpleTextButton(Resources.close_text, nav_fillColor, nav_hoverColor, nav_fillTextColor, nav_hoverTextColor);
-        closeButton.setClickCallback((boolean isInteract, MapGuiHolder holder) -> {
+        closeButton.setClickCallback((boolean isInteract, EphemeralMapGui holder) -> {
             holder.closePanel();
         });
         addInteractableElement(closeButton);
@@ -77,7 +75,7 @@ public class GuideMenuGUI extends MapGuiBase {
     }
 
     @Override
-    public void render(MapGuiHolder holder) {
+    public void render(EphemeralMapGui holder) {
       //  MapRenderer.fill(holder, (byte) 0);
        // banner = new BitMapImage("banner.png").scaledDimensions(-1, 100).setAlphaCutoff(200).bake();
 
@@ -101,7 +99,7 @@ public class GuideMenuGUI extends MapGuiBase {
     }
 
     @Override
-    public void onMousePosChange(MapGuiHolder holder, int newMouseX, int newMouseY, int oldMouseX, int oldMouseY) {
+    public void onMousePosChange(EphemeralMapGui holder, int newMouseX, int newMouseY, int oldMouseX, int oldMouseY) {
 
         super.onMousePosChange(holder, newMouseX, newMouseY, oldMouseX, oldMouseY);
 

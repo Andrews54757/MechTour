@@ -1,7 +1,7 @@
 package net.andrews.sooncmp.mapgui.gui;
 
 
-import net.andrews.sooncmp.mapgui.MapGuiHolder;
+import net.andrews.sooncmp.mapgui.EphemeralMapGui;
 import net.andrews.sooncmp.mapgui.MapRenderer;
 import net.andrews.sooncmp.mapgui.MapText;
 
@@ -41,7 +41,7 @@ public class SimpleTextButton extends InteractableElement {
     }
 
     @Override
-    public void render(MapGuiHolder holder) {
+    public void render(EphemeralMapGui holder) {
         
         byte color = this.isMouseOver() ? hoverColor : fillColor;
 
@@ -57,13 +57,13 @@ public class SimpleTextButton extends InteractableElement {
     
 
     @Override
-    public void onMouseOver(MapGuiHolder holder, int mouseX, int mouseY) {
+    public void onMouseOver(EphemeralMapGui holder, int mouseX, int mouseY) {
         
        this.setReRenderFlag(true);
     }
 
     @Override
-    public void onMouseOut(MapGuiHolder holder, int mouseX, int mouseY) {
+    public void onMouseOut(EphemeralMapGui holder, int mouseX, int mouseY) {
         this.setReRenderFlag(true);
     }
 }
