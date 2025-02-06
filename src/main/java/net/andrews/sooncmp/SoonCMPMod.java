@@ -797,23 +797,23 @@ public class SoonCMPMod {
         if (!player.getBlockPos().isWithinDistance(gui.getPanelOpenPos(), 100))
             return false;
         // check if player is in front
-        BlockPos playerPos = player.getBlockPos();
-        BlockPos panelPos = gui.getPanelOpenPos();
-        Direction facing = gui.getPanelFacingSide();
+        // BlockPos playerPos = player.getBlockPos();
+        // BlockPos panelPos = gui.getPanelOpenPos();
+        // Direction facing = gui.getPanelFacingSide();
 
-        if (facing == Direction.NORTH) {
-            if (playerPos.getZ() > panelPos.getZ())
-                return false;
-        } else if (facing == Direction.SOUTH) {
-            if (playerPos.getZ() < panelPos.getZ())
-                return false;
-        } else if (facing == Direction.EAST) {
-            if (playerPos.getX() < panelPos.getX())
-                return false;
-        } else if (facing == Direction.WEST) {
-            if (playerPos.getX() > panelPos.getX())
-                return false;
-        }
+        // if (facing == Direction.NORTH) {
+        //     if (playerPos.getZ() > panelPos.getZ())
+        //         return false;
+        // } else if (facing == Direction.SOUTH) {
+        //     if (playerPos.getZ() < panelPos.getZ())
+        //         return false;
+        // } else if (facing == Direction.EAST) {
+        //     if (playerPos.getX() < panelPos.getX())
+        //         return false;
+        // } else if (facing == Direction.WEST) {
+        //     if (playerPos.getX() > panelPos.getX())
+        //         return false;
+        // }
         return true;
     }
 

@@ -3,6 +3,8 @@ package net.andrews.sooncmp.slideshow;
 import java.util.HashSet;
 import java.util.List;
 
+import com.mojang.datafixers.util.Pair;
+
 import net.andrews.sooncmp.Utils;
 import net.andrews.sooncmp.mapgui.Mutable2DRect;
 import net.minecraft.block.entity.VaultBlockEntity.Server;
@@ -27,8 +29,10 @@ public class MapGuiMap {
     private ItemStack mapItem;
 
     private BlockPos pos;
+    private BlockPos posMirrored;
     private Direction side;
     private GlowItemFrameEntity frameEntity;
+    private GlowItemFrameEntity frameEntityMirrored;
 
     public static int MAP_WIDTH = 128;
     public static int MAP_HEIGHT = 128;
@@ -38,13 +42,14 @@ public class MapGuiMap {
     private Mutable2DRect changedBounds = new Mutable2DRect(0, 0, 0, 0);
     private byte[] prevColors;
 
-    MapGuiMap(MapIdComponent code, ServerWorld world, BlockPos pos, Direction side) {
+    MapGuiMap(MapIdComponent code, ServerWorld world, BlockPos pos, BlockPos posMirrored, Direction side) {
         this.code = code;
         this.colors = new byte[MAP_WIDTH * MAP_HEIGHT];
         this.prevColors = new byte[MAP_WIDTH * MAP_HEIGHT];
 
         this.pos = pos;
         this.side = side;
+        this.posMirrored = posMirrored;
 
         this.mapItem = new ItemStack(Items.FILLED_MAP);
         this.mapItem.set(DataComponentTypes.MAP_ID, code);
@@ -53,6 +58,10 @@ public class MapGuiMap {
         this.frameEntity = new GlowItemFrameEntity(world, pos, side);
         this.frameEntity.setInvisible(true);
         this.frameEntity.setHeldItemStack(this.mapItem, false);
+
+        this.frameEntityMirrored = new GlowItemFrameEntity(world, posMirrored, side.getOpposite());
+        this.frameEntityMirrored.setInvisible(true);
+        this.frameEntityMirrored.setHeldItemStack(this.mapItem, false);
     }
 
     public boolean setPixel(int i, int j, byte color) {
@@ -77,10 +86,16 @@ public class MapGuiMap {
         if (list != null && list.size() > 0) {
             Utils.sendPacket(player, new EntityTrackerUpdateS2CPacket(frameEntity.getId(), list));
         }
+
+        Utils.sendPacket(player, frameEntityMirrored.createSpawnPacket(null));
+        List<DataTracker.SerializedEntry<?>> list2 = frameEntityMirrored.getDataTracker().getChangedEntries();
+        if (list2 != null && list2.size() > 0) {
+            Utils.sendPacket(player, new EntityTrackerUpdateS2CPacket(frameEntityMirrored.getId(), list2));
+        }
     }
 
-    public int getFrameID() {
-        return frameEntity.getId();
+    public Pair<Integer, Integer> getFrameIDS() {
+        return Pair.of(frameEntity.getId(), frameEntityMirrored.getId());
     }
 
     void sendMapDataDelta(HashSet<ServerPlayerEntity> players) {
@@ -132,9 +147,5 @@ public class MapGuiMap {
             prevColors[index] = -1;
         }
         changedBounds.set(0, 0, MAP_WIDTH, MAP_HEIGHT);
-    }
-
-    int getEntityId() {
-        return frameEntity.getId();
     }
 }

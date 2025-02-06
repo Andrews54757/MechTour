@@ -38,6 +38,7 @@ public class SlideshowGUI {
     private ServerWorld panelWorld;
 
     private Box panelBox;
+    private Box panelBoxMirror;
 
     private int panelWidth;
     private int panelHeight;
@@ -46,6 +47,8 @@ public class SlideshowGUI {
     private int panelSize;
     private BlockPos panelCorner1;
     private BlockPos panelCorner2;
+    private BlockPos mirrorPanelCorner1;
+    private BlockPos mirrorPanelCorner2;
 
     private List<Pair<Integer, Integer>> old_positions_looking_at = new ArrayList<>();
 
@@ -128,29 +131,79 @@ public class SlideshowGUI {
         return panelPixelHeight;
     }
 
+    public boolean isPlayerFacingFront(ServerPlayerEntity player) {
+        BlockPos playerPos = player.getBlockPos();
+        BlockPos panelPos = this.panelOpenPos;
+        Direction facing = this.panelFacingSide;
+
+        if (facing == Direction.NORTH) {
+            if (playerPos.getZ() > panelPos.getZ())
+                return false;
+        } else if (facing == Direction.SOUTH) {
+            if (playerPos.getZ() < panelPos.getZ())
+                return false;
+        } else if (facing == Direction.EAST) {
+            if (playerPos.getX() < panelPos.getX())
+                return false;
+        } else if (facing == Direction.WEST) {
+            if (playerPos.getX() > panelPos.getX())
+                return false;
+        }
+
+        return true;
+    }
+
     public Pair<Integer, Integer> getMousePosForPlayer(ServerPlayerEntity player) {
-        BlockHitResult result = Utils.raycastBox(player.getWorld(), player, 30, panelBox);
-        if (result == null || result.getSide() != panelFacingSide)
-            return null;
+        if (isPlayerFacingFront(player)) {
+            BlockHitResult result = Utils.raycastBox(player.getWorld(), player, 30, panelBox);
+            if (result == null || result.getSide() != panelFacingSide) {
+                return null;
+            }
 
-        double dx = panelCorner1.getX() - result.getPos().getX();
-        double dy = panelCorner1.getY() - result.getPos().getY() + 1;
-        double dz = panelCorner1.getZ() - result.getPos().getZ();
+            double dx = panelCorner1.getX() - result.getPos().getX();
+            double dy = panelCorner1.getY() - result.getPos().getY() + 1;
+            double dz = panelCorner1.getZ() - result.getPos().getZ();
 
-        if (panelFacingSide != Direction.NORTH) {
-            dx = -dx;
+            if (panelFacingSide != Direction.NORTH) {
+                dx = -dx;
+            } else {
+                dx += 1;
+            }
+            if (panelFacingSide != Direction.EAST) {
+                dz = -dz;
+            } else {
+                dz += 1;
+            }
+
+            int newMouseX = (int) ((panelFacingSide.getAxis() == Axis.Z ? dx : dz) * MapGuiMap.MAP_WIDTH);
+            int newMouseY = (int) (dy * MapGuiMap.MAP_HEIGHT);
+            return new Pair<>(newMouseX, newMouseY);
         } else {
-            dx += 1;
-        }
-        if (panelFacingSide != Direction.EAST) {
-            dz = -dz;
-        } else {
-            dz += 1;
-        }
+            BlockHitResult result2 = Utils.raycastBox(player.getWorld(), player, 30,
+                    panelBoxMirror);
+            if (result2 == null || result2.getSide() != panelFacingSide.getOpposite()) {
+                return null;
+            }
+            double dx = mirrorPanelCorner1.getX() - result2.getPos().getX();
+            double dy = mirrorPanelCorner2.getY() - result2.getPos().getY() + 1;
+            double dz = mirrorPanelCorner1.getZ() - result2.getPos().getZ();
 
-        int newMouseX = (int) ((panelFacingSide.getAxis() == Axis.Z ? dx : dz) * MapGuiMap.MAP_WIDTH);
-        int newMouseY = (int) (dy * MapGuiMap.MAP_HEIGHT);
-        return new Pair<>(newMouseX, newMouseY);
+            if (panelFacingSide.getOpposite() != Direction.NORTH) {
+                dx = -dx;
+            } else {
+                dx += 1;
+            }
+            if (panelFacingSide.getOpposite() != Direction.EAST) {
+                dz = -dz;
+            } else {
+                dz += 1;
+            }
+
+            int newMouseX = (int) ((panelFacingSide.getAxis() == Axis.Z ? dx : dz) * MapGuiMap.MAP_WIDTH);
+            int newMouseY = (int) (dy * MapGuiMap.MAP_HEIGHT);
+
+            return new Pair<>(newMouseX, newMouseY);
+        }
     }
 
     public void tick() {
@@ -206,7 +259,7 @@ public class SlideshowGUI {
             return;
         Pair<Integer, Integer> mousePos = getMousePosForPlayer(player);
         if (mousePos == null)
-                return;
+            return;
         this.mapGui.onClick(player, mousePos, false, this);
     }
 
@@ -295,7 +348,12 @@ public class SlideshowGUI {
         }
         panelCorner2 = new BlockPos(offsetX + openPos.getX(), openPos.getY(), offsetZ + openPos.getZ())
                 .offset(side.getOpposite(), 1);
+
+        mirrorPanelCorner1 = panelCorner2.offset(side, 1);
+        mirrorPanelCorner2 = panelCorner1.offset(side, 1);
+
         this.panelBox = Utils.createEnclosingAABB(panelCorner1, panelCorner2);
+        this.panelBoxMirror = Utils.createEnclosingAABB(mirrorPanelCorner1, mirrorPanelCorner2);
 
         for (int y = height - 1; y >= 0; y--) {
             for (int x = 0; x < width; x++) {
@@ -308,7 +366,19 @@ public class SlideshowGUI {
                     offsetZ = side != Direction.EAST ? (x) : (width - x - 1);
                 }
                 BlockPos pos = new BlockPos(offsetX + openPos.getX(), openPos.getY() + y, offsetZ + openPos.getZ());
-                MapGuiMap map = new MapGuiMap(new MapIdComponent(PREFIX++), this.panelWorld, pos, side);
+
+                offsetX = 0;
+                offsetZ = 0;
+                if (side.getAxis() == Axis.Z) {
+                    offsetX = side != Direction.NORTH ? (width - x - 1) : (x);
+                } else if (side.getAxis() == Axis.X) {
+                    offsetZ = side != Direction.EAST ? (width - x - 1) : (x);
+                }
+                BlockPos posMirrored = (new BlockPos(offsetX + openPos.getX(), openPos.getY() + y,
+                        offsetZ + openPos.getZ()))
+                        .offset(side.getOpposite(), 1);
+
+                MapGuiMap map = new MapGuiMap(new MapIdComponent(PREFIX++), this.panelWorld, pos, posMirrored, side);
                 maps.add(map);
             }
         }
@@ -322,9 +392,10 @@ public class SlideshowGUI {
 
     void removePanelFromPlayer(ServerPlayerEntity player) {
         int i = Math.min(this.panelSize, Integer.MAX_VALUE);
-        int[] is = new int[i];
+        int[] is = new int[i * 2];
         for (int j = 0; j < i; j++) {
-            is[j] = maps.get(j).getEntityId();
+            is[j * 2] = maps.get(j).getFrameIDS().getFirst();
+            is[j * 2 + 1] = maps.get(j).getFrameIDS().getSecond();
         }
         Utils.sendPacket(player, new EntitiesDestroyS2CPacket(is));
     }
