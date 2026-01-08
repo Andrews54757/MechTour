@@ -237,7 +237,7 @@ public class EphemeralMapGui {
             this.mapGui.setReRenderFlag(true);
         }
         this.panelOpen = true;
-        this.panelWorld = this.player.serverLevel();
+        this.panelWorld = this.player.level();
         this.panelOpenPos = openPos;
         this.panelFacingSide = side;
 

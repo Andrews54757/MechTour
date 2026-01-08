@@ -1,10 +1,10 @@
 package net.andrews.sooncmp;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -30,6 +30,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.ComponentArgument;
 import net.minecraft.commands.arguments.DimensionArgument;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
@@ -37,10 +38,12 @@ import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -48,8 +51,8 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.util.thread.BlockableEventLoop;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Relative;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.Vec3;
 
 public class SoonCMPMod {
@@ -83,9 +86,7 @@ public class SoonCMPMod {
         slideshowManager = new SlideshowManager();
         shouldInit = true;
 
-        dispatcher.register(Commands.literal("sooncmp").requires((serverCommandSource) -> {
-            return serverCommandSource.hasPermission(2);
-        })
+        dispatcher.register(Commands.literal("sooncmp").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))
                 .then(Commands.literal("config").then(Commands.argument("name", StringArgumentType.word())
                         .suggests((c, b) -> SharedSuggestionProvider.suggest(Configs.getFields(), b)).then(Commands
                                 .argument("value", StringArgumentType.greedyString()).executes(SoonCMPMod::setConfig))
@@ -103,9 +104,7 @@ public class SoonCMPMod {
                                                 .executes(SoonCMPMod::listWaypoints))
                                         .then(Commands.literal("all").executes(SoonCMPMod::listAllWaypoints))
                                         .executes(SoonCMPMod::listWaypoints))
-                                .then(Commands.literal("add").requires((serverCommandSource) -> {
-                                    return serverCommandSource.hasPermission(2);
-                                }).then(Commands.argument("pos", Vec3Argument.vec3())
+                                .then(Commands.literal("add").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).then(Commands.argument("pos", Vec3Argument.vec3())
                                         .then(Commands.argument("dimension", DimensionArgument.dimension())
                                                 .then(Commands.argument("icon", StringArgumentType.word())
                                                         .suggests((c, b) -> SharedSuggestionProvider
@@ -120,9 +119,7 @@ public class SoonCMPMod {
                                                 .then(Commands.argument("name", StringArgumentType.greedyString())
                                                         .executes(SoonCMPMod::addWaypoint)))
 
-                                ).then(Commands.literal("remove").requires((serverCommandSource) -> {
-                                    return serverCommandSource.hasPermission(2);
-                                }).then(Commands
+                                ).then(Commands.literal("remove").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).then(Commands
                                         .argument("dimension", DimensionArgument.dimension()).then(
                                                 Commands
                                                         .argument("name",
@@ -135,50 +132,34 @@ public class SoonCMPMod {
                                                                                                 .getDimension(c,
                                                                                                         "dimension")
                                                                                                 .dimension()
-                                                                                                .location().getPath()),
+                                                                                                .identifier().getPath()),
                                                                                 b))
                                                         .executes(SoonCMPMod::removeWaypoint)))
                                         .executes(SoonCMPMod::removeWaypoint2))
-                                .then(Commands.literal("modifyPos").requires((serverCommandSource) -> {
-                                    return serverCommandSource.hasPermission(2);
-                                }).then(Commands.argument("pos", Vec3Argument.vec3())
+                                .then(Commands.literal("modifyPos").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).then(Commands.argument("pos", Vec3Argument.vec3())
                                         .executes(SoonCMPMod::modifyPos)).executes(SoonCMPMod::modifyPos))
-                                .then(Commands.literal("modifyIcon").requires((serverCommandSource) -> {
-                                    return serverCommandSource.hasPermission(2);
-                                }).then(Commands.argument("icon", StringArgumentType.word())
+                                .then(Commands.literal("modifyIcon").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).then(Commands.argument("icon", StringArgumentType.word())
                                         .suggests((c, b) -> SharedSuggestionProvider.suggest(WaypointIcons.getIconNames(),
                                                 b))
                                         .executes(SoonCMPMod::modifyIcon)))
-                                .then(Commands.literal("modifyName").requires((serverCommandSource) -> {
-                                    return serverCommandSource.hasPermission(2);
-                                }).then(Commands.argument("newname", StringArgumentType.greedyString())
+                                .then(Commands.literal("modifyName").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).then(Commands.argument("newname", StringArgumentType.greedyString())
                                         .executes(SoonCMPMod::modifyName)))
-                                .then(Commands.literal("modifyColor").requires((serverCommandSource) -> {
-                                    return serverCommandSource.hasPermission(2);
-                                }).then(Commands.argument("r", IntegerArgumentType.integer(0, 255))
+                                .then(Commands.literal("modifyColor").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).then(Commands.argument("r", IntegerArgumentType.integer(0, 255))
                                         .then(Commands.argument("g", IntegerArgumentType.integer(0, 255))
                                                 .then(Commands.argument("b", IntegerArgumentType.integer(0, 255))
                                                         .executes(SoonCMPMod::modifyColor)))))
-                                .then(Commands.literal("move").requires((serverCommandSource) -> {
-                                    return serverCommandSource.hasPermission(2);
-                                }).then(Commands.argument("newindex", IntegerArgumentType.integer())
+                                .then(Commands.literal("move").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).then(Commands.argument("newindex", IntegerArgumentType.integer())
                                         .executes(SoonCMPMod::moveCommand)))
-                                .then(Commands.literal("reload").requires((serverCommandSource) -> {
-                                    return serverCommandSource.hasPermission(2);
-                                }).then(Commands.literal("icons").executes(SoonCMPMod::reloadIconsCommand))
+                                .then(Commands.literal("reload").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).then(Commands.literal("icons").executes(SoonCMPMod::reloadIconsCommand))
                                         .executes(SoonCMPMod::reloadCommand))
                                 .executes(SoonCMPMod::openGuiCommand));
 
-        dispatcher.register(Commands.literal("slideshow").requires((serverCommandSource) -> {
-            return serverCommandSource.hasPermission(2);
-        }).then(Commands.literal("place").then(Commands.argument("pos1", BlockPosArgument.blockPos())
+        dispatcher.register(Commands.literal("slideshow").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).then(Commands.literal("place").then(Commands.argument("pos1", BlockPosArgument.blockPos())
                 .then(Commands.argument("pos2", BlockPosArgument.blockPos())
                         .executes(SoonCMPMod::openSlideshowCommand))))
                 .then(Commands.literal("remove").executes(SoonCMPMod::removeSlideshowCommand)));
 
-        dispatcher.register(Commands.literal("tpw").requires((serverCommandSource) -> {
-            return serverCommandSource.hasPermission(2);
-        }).then(Commands
+        dispatcher.register(Commands.literal("tpw").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)).then(Commands
                 .argument("players",
                         EntityArgument.players())
                 .then(Commands
@@ -188,7 +169,7 @@ public class SoonCMPMod {
                                 .suggests((c,
                                         b) -> SharedSuggestionProvider.suggest(waypointManager.getWaypointNames(
                                                 DimensionArgument.getDimension(c, "dimension")
-                                                        .dimension().location().getPath()),
+                                                        .dimension().identifier().getPath()),
                                                 b))
                                 .executes(SoonCMPMod::tpWaypoint)))));
 
@@ -231,14 +212,14 @@ public class SoonCMPMod {
             }
 
             Direction facing = player.getDirection().getOpposite();
-            SlideshowConfig config = new SlideshowConfig(player.level().dimension().location().getPath(),
+            SlideshowConfig config = new SlideshowConfig(player.level().dimension().identifier().getPath(),
                     minPos.getX(), minPos.getY(), minPos.getZ(), width, height, facing.getName());
             if (slideshowManager.hasSlideshow(config)) {
                 sendFeedback(ctx, "There is already a slideshow here!", true);
                 return 1;
             }
             slideshowManager.addSlideshow(config);
-            slideshowGUIs.add(new SlideshowGUI(player.getServer(), config));
+            slideshowGUIs.add(new SlideshowGUI(player.level().getServer(), config));
             sendFeedback(ctx, "Opened slideshow!", true);
         } catch (Exception e) {
             sendFeedback(ctx, "An error has occured: " + e, true);
@@ -407,10 +388,10 @@ public class SoonCMPMod {
             String dimension;
 
             try {
-                dimension = DimensionArgument.getDimension(ctx, "dimension").dimension().location()
+                dimension = DimensionArgument.getDimension(ctx, "dimension").dimension().identifier()
                         .getPath();
             } catch (Exception e) {
-                dimension = ctx.getSource().getLevel().dimension().location().getPath();
+                dimension = ctx.getSource().getLevel().dimension().identifier().getPath();
             }
 
             ArrayList<Waypoint> waypoints = waypointManager.getWaypoints(dimension);
@@ -446,11 +427,11 @@ public class SoonCMPMod {
             Vec3 pos;
 
             try {
-                dimension = DimensionArgument.getDimension(ctx, "dimension").dimension().location()
+                dimension = DimensionArgument.getDimension(ctx, "dimension").dimension().identifier()
                         .getPath();
                 pos = Vec3Argument.getCoordinates(ctx, "pos").getPosition(ctx.getSource());
             } catch (Exception e) {
-                dimension = ctx.getSource().getLevel().dimension().location().getPath();
+                dimension = ctx.getSource().getLevel().dimension().identifier().getPath();
                 pos = ctx.getSource().getPosition();
             }
 
@@ -482,11 +463,11 @@ public class SoonCMPMod {
             String dimension;
 
             try {
-                dimension = DimensionArgument.getDimension(ctx, "dimension").dimension().location()
+                dimension = DimensionArgument.getDimension(ctx, "dimension").dimension().identifier()
                         .getPath();
 
             } catch (Exception e) {
-                dimension = ctx.getSource().getLevel().dimension().location().getPath();
+                dimension = ctx.getSource().getLevel().dimension().identifier().getPath();
             }
 
             String name = StringArgumentType.getString(ctx, "name");
@@ -758,11 +739,11 @@ public class SoonCMPMod {
             String dimension;
 
             try {
-                dimension = DimensionArgument.getDimension(ctx, "dimension").dimension().location()
+                dimension = DimensionArgument.getDimension(ctx, "dimension").dimension().identifier()
                         .getPath();
 
             } catch (Exception e) {
-                dimension = ctx.getSource().getLevel().dimension().location().getPath();
+                dimension = ctx.getSource().getLevel().dimension().identifier().getPath();
             }
 
             String name = StringArgumentType.getString(ctx, "name");
@@ -792,7 +773,7 @@ public class SoonCMPMod {
     public static boolean shouldPlayerBeInSlideshow(ServerPlayer player, SlideshowGUI gui) {
         if (player.hasDisconnected() || !player.isAlive())
             return false;
-        if (player.serverLevel() != gui.getPanelWorld())
+        if (player.level() != gui.getPanelWorld())
             return false;
         if (!player.blockPosition().closerThan(gui.getPanelOpenPos(), 100))
             return false;
@@ -898,7 +879,7 @@ public class SoonCMPMod {
     }
 
     public static void openGuideGUI(ServerPlayer player) {
-        ((BlockableEventLoop<?>) player.getServer()).execute(() -> {
+        ((BlockableEventLoop<?>) player.level().getServer()).execute(() -> {
             EphemeralMapGui holder = guiHolders.get(player);
             if (holder == null) {
                 holder = new EphemeralMapGui(player);
@@ -987,10 +968,10 @@ public class SoonCMPMod {
     }
 
     public static PlayerInfo getPlayerInfo(ServerPlayer player) {
-        PlayerInfo info = playerInfos.get(player.getGameProfile().getName());
+        PlayerInfo info = playerInfos.get(player.getGameProfile().name());
         if (info == null) {
             info = new PlayerInfo(player);
-            playerInfos.put(player.getGameProfile().getName(), info);
+            playerInfos.put(player.getGameProfile().name(), info);
         }
         return info;
     }
@@ -1000,21 +981,27 @@ public class SoonCMPMod {
         String dimension = "New%20World";
 
         if (player.level().dimension() == Level.OVERWORLD) {
-            dimension = "New%20World";
+            dimension = "overworld";
         } else if (player.level().dimension() == Level.NETHER) {
-            dimension = "DIM-1";
+            dimension = "nether";
         } else if (player.level().dimension() == Level.END) {
-            dimension = "DIM1";
+            dimension = "end";
         }
 
-        String link = Configs.configs.mapUrlBase + "/?worldname=" + dimension + "&mapname=flat&zoom=5&x="
-                + player.blockPosition().getX() + "&y=64&z="
-                + player.blockPosition().getZ();
+        // https://cmpmap.soontech.org/#overworld:-2180:0:0:717:0:0:0:0:perspective
 
-        player.sendSystemMessage(Component.Serializer.fromJson(
-                "{\"text\":\"[Click Me]\",\"color\":\"dark_green\",\"underlined\":true,\"hoverEvent\":{\"action\":\"show_text\",\"contents\":[{\"text\":\""
-                        + link + "\"}]},\"clickEvent\":{\"action\":\"open_url\",\"value\":\"" + link + "\"}}",
-                player.registryAccess()));
+        String link = Configs.configs.mapUrlBase + "/#" + dimension + ":"
+                + (int) player.getX() + ":0:" + (int) player.getZ()
+                + ":500:0:0:0:0:perspective";
+
+       
+        Component component = Component.literal("[Click Me]")
+                .withStyle(style -> style
+                        .withColor(ChatFormatting.DARK_GREEN)
+                        .withUnderlined(true)
+                        .withHoverEvent(new HoverEvent.ShowText(Component.literal(link)))
+                        .withClickEvent(new ClickEvent.OpenUrl(URI.create(link))));
+        player.sendSystemMessage(component);
     }
 
     private static void sendToOps(MinecraftServer server, String message) {
@@ -1022,15 +1009,15 @@ public class SoonCMPMod {
             return;
         Component text = (Component.literal(message)).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC);
 
-        if (server.getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK)) {
+        if (server.getWorldData().getGameRules().get(GameRules.SEND_COMMAND_FEEDBACK)) {
             for (ServerPlayer serverPlayerEntity : server.getPlayerList().getPlayers()) {
-                if (server.getPlayerList().isOp(serverPlayerEntity.getGameProfile())) {
+                if (server.getPlayerList().isOp(serverPlayerEntity.nameAndId())) {
                     serverPlayerEntity.sendSystemMessage(text);
                 }
             }
         }
 
-        if (server.getGameRules().getBoolean(GameRules.RULE_LOGADMINCOMMANDS)) {
+        if (server.getWorldData().getGameRules().get(GameRules.LOG_ADMIN_COMMANDS)) {
             server.sendSystemMessage(text);
         }
 
@@ -1050,7 +1037,7 @@ public class SoonCMPMod {
 
         sendActionBarMessage(player, "Teleporting to " + waypoint.getName());
 
-        ((BlockableEventLoop<?>) player.getServer()).execute(() -> {
+        ((BlockableEventLoop<?>)  player.level().getServer()).execute(() -> {
             teleportToWaypointInternal(player, waypoint, broadcast);
         });
     }
@@ -1059,7 +1046,7 @@ public class SoonCMPMod {
 
         sendActionBarMessage(player, "Teleporting to spawn");
 
-        ((BlockableEventLoop<?>) player.getServer()).execute(() -> {
+        ((BlockableEventLoop<?>) player.level().getServer()).execute(() -> {
             teleportToWaypointInternal(player, new Waypoint(9.5, -43, -6.5, "overworld", "Spawn", "spawn"), false);
         });
     }
@@ -1072,9 +1059,9 @@ public class SoonCMPMod {
         float pitch = player.getViewXRot(1);
         float yaw = player.getViewYRot(1);
         Set<Relative> set = EnumSet.noneOf(Relative.class);
-        ResourceLocation identifier = ResourceLocation.parse(waypoint.getDimension());
+        Identifier identifier = Identifier.parse(waypoint.getDimension());
         ResourceKey<Level> registryKey = ResourceKey.create(Registries.DIMENSION, identifier);
-        ServerLevel world = player.getServer().getLevel(registryKey);
+        ServerLevel world = player.level().getServer().getLevel(registryKey);
 
         if (world == player.level()) {
             player.connection.teleport(x, y, z, yaw, pitch);
@@ -1082,7 +1069,7 @@ public class SoonCMPMod {
             player.teleportTo(world, x, y, z, set, yaw, pitch, true);
         }
         if (broadcast)
-            sendToOps(player.getServer(), "Teleported " + player.getDisplayName().getString() + " to waypoint "
+            sendToOps(player.level().getServer(), "Teleported " + player.getDisplayName().getString() + " to waypoint "
                     + waypoint.getName() + " in dimension " + waypoint.getDimension());
 
     }

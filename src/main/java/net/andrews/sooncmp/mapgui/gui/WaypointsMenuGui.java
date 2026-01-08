@@ -113,7 +113,7 @@ public class WaypointsMenuGui extends MapGuiBase {
         closeButton.setDimensions(holder.getPanelPixelWidth() - 100 - 10, 10, 100, 50);
 
         WaypointManager manager = SoonCMPMod.waypointManager;
-        ArrayList<Waypoint> waypoints = manager.getWaypoints(currentDimensionTab.getKey().location().getPath());
+        ArrayList<Waypoint> waypoints = manager.getWaypoints(currentDimensionTab.getKey().identifier().getPath());
 
         int page = scrollBar.getDisplayPage();
 
@@ -242,7 +242,7 @@ public class WaypointsMenuGui extends MapGuiBase {
         if (currentBox != -1) {
 
             WaypointManager manager = SoonCMPMod.waypointManager;
-            ArrayList<Waypoint> waypoints = manager.getWaypoints(currentDimensionTab.getKey().location().getPath());
+            ArrayList<Waypoint> waypoints = manager.getWaypoints(currentDimensionTab.getKey().identifier().getPath());
 
             int startIndex = scrollBar.getDisplayPage() * itemsPerPage;
             int index = currentBox + startIndex;

@@ -17,8 +17,8 @@ import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetHeldSlotPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -62,7 +62,7 @@ public class SlideshowGUI {
     }
 
     public SlideshowGUI(MinecraftServer server, SlideshowConfig config) {
-        ResourceLocation identifier = ResourceLocation.parse(config.dimension);
+        Identifier identifier = Identifier.parse(config.dimension);
         ResourceKey<Level> registryKey = ResourceKey.create(Registries.DIMENSION, identifier);
         ServerLevel world = server.getLevel(registryKey);
         BlockPos pos = new BlockPos(config.x, config.y, config.z);
@@ -71,7 +71,7 @@ public class SlideshowGUI {
     }
 
     public SlideshowConfig getConfig() {
-        return new SlideshowConfig(panelWorld.dimension().location().getPath(), panelOpenPos.getX(),
+        return new SlideshowConfig(panelWorld.dimension().identifier().getPath(), panelOpenPos.getX(),
                 panelOpenPos.getY(), panelOpenPos.getZ(), panelWidth, panelHeight, panelFacingSide.getName());
     }
 
