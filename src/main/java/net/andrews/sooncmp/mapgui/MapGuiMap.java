@@ -3,26 +3,26 @@ package net.andrews.sooncmp.mapgui;
 import java.util.List;
 
 import net.andrews.sooncmp.Utils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.MapIdComponent;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.decoration.GlowItemFrameEntity;
-import net.minecraft.entity.decoration.ItemFrameEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.map.MapState.UpdateData;
-import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket;
-import net.minecraft.network.packet.s2c.play.MapUpdateS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.protocol.game.ClientboundMapItemDataPacket;
+import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.decoration.GlowItemFrame;
+import net.minecraft.world.entity.decoration.ItemFrame;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.saveddata.maps.MapId;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData.MapPatch;
 
 public class MapGuiMap {
 
-    private MapIdComponent code;
-    private ServerPlayerEntity player;
+    private MapId code;
+    private ServerPlayer player;
 
-    private ItemFrameEntity mapEntity = null;
+    private ItemFrame mapEntity = null;
     private ItemStack mapItem;
 
     public static int MAP_WIDTH = 128;
@@ -33,7 +33,7 @@ public class MapGuiMap {
     private Mutable2DRect changedBounds = new Mutable2DRect(0, 0, 0, 0);
     private byte[] prevColors;
 
-    MapGuiMap(MapIdComponent code, EphemeralMapGui holder, ServerPlayerEntity player) {
+    MapGuiMap(MapId code, EphemeralMapGui holder, ServerPlayer player) {
         this.code = code;
         this.player = player;
         this.colors = new byte[MAP_WIDTH * MAP_HEIGHT];
@@ -41,7 +41,7 @@ public class MapGuiMap {
 
 
         this.mapItem = new ItemStack(Items.FILLED_MAP);
-        this.mapItem.set(DataComponentTypes.MAP_ID, code);
+        this.mapItem.set(DataComponents.MAP_ID, code);
         this.mapItem.setCount(1);
     }
 
@@ -62,16 +62,16 @@ public class MapGuiMap {
 
     void updateItemFrame(BlockPos pos, Direction side, int x, int y) {
 
-        this.mapEntity = new GlowItemFrameEntity(player.getWorld(), pos, side);
+        this.mapEntity = new GlowItemFrame(player.level(), pos, side);
         this.mapEntity.setInvisible(true);
-        this.mapEntity.setHeldItemStack(this.mapItem, false);
+        this.mapEntity.setItem(this.mapItem, false);
     }
 
     void showFrame() {
-        Utils.sendPacket(player, this.mapEntity.createSpawnPacket(null));
-        List<DataTracker.SerializedEntry<?>> list = this.mapEntity.getDataTracker().getChangedEntries();
+        Utils.sendPacket(player, this.mapEntity.getAddEntityPacket(null));
+        List<SynchedEntityData.DataValue<?>> list = this.mapEntity.getEntityData().getNonDefaultValues();
         if (list != null && list.size() > 0) {
-            Utils.sendPacket(player, new EntityTrackerUpdateS2CPacket(this.mapEntity.getId(), list));
+            Utils.sendPacket(player, new ClientboundSetEntityDataPacket(this.mapEntity.getId(), list));
         }
     }
 
@@ -107,8 +107,8 @@ public class MapGuiMap {
             }
         }
 
-        UpdateData updateData = new UpdateData(changedBounds.getMinX(), changedBounds.getMinY(), changedBounds.getWidth(), changedBounds.getHeight(), colorsToSend);
-        Utils.sendPacket(player, new MapUpdateS2CPacket(code, MAP_SCALE, false, null, updateData));
+        MapPatch updateData = new MapPatch(changedBounds.getMinX(), changedBounds.getMinY(), changedBounds.getWidth(), changedBounds.getHeight(), colorsToSend);
+        Utils.sendPacket(player, new ClientboundMapItemDataPacket(code, MAP_SCALE, false, null, updateData));
         changedBounds.set(0, 0, 0, 0);
     }
 

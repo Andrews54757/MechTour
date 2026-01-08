@@ -6,7 +6,7 @@ import java.util.List;
 import com.mojang.datafixers.util.Pair;
 
 import net.andrews.sooncmp.slideshow.SlideshowGUI;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 
 public abstract class MapGuiBase {
@@ -48,7 +48,7 @@ public abstract class MapGuiBase {
     }
 
 
-    public void onClick(ServerPlayerEntity player, Pair<Integer, Integer> mousepos, boolean isInteractKey, SlideshowGUI holder) {
+    public void onClick(ServerPlayer player, Pair<Integer, Integer> mousepos, boolean isInteractKey, SlideshowGUI holder) {
 
         for (InteractableElement element : this.interactableElements) {
             if (element.isMouseOnElement(mousepos.getFirst(), mousepos.getSecond())) {

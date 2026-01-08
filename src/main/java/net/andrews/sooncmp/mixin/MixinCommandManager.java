@@ -10,18 +10,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.spongepowered.asm.mixin.injection.At;
 import net.andrews.sooncmp.SoonCMPMod;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 
-@Mixin(CommandManager.class)
+@Mixin(Commands.class)
 public class MixinCommandManager {
     @Shadow
     @Final
-    private CommandDispatcher<ServerCommandSource> dispatcher;
+    private CommandDispatcher<CommandSourceStack> dispatcher;
     
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void onRegister(CommandManager.RegistrationEnvironment arg, CommandRegistryAccess commandRegistryAccess, CallbackInfo ci) {
+    private void onRegister(Commands.CommandSelection arg, CommandBuildContext commandRegistryAccess, CallbackInfo ci) {
         SoonCMPMod.registerCommands(this.dispatcher);
     }
 }

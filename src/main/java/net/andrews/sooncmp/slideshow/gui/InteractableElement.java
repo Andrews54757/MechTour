@@ -8,7 +8,7 @@ import com.mojang.datafixers.util.Pair;
 
 import net.andrews.sooncmp.mapgui.Mutable2DRect;
 import net.andrews.sooncmp.slideshow.SlideshowGUI;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 public abstract class InteractableElement extends MapGuiBase {
     private Mutable2DRect interaction_bounds = new Mutable2DRect(0, 0, 0, 0);
@@ -27,7 +27,7 @@ public abstract class InteractableElement extends MapGuiBase {
         onClickCallback = callback;
     }
 
-    public void onClick(ServerPlayerEntity player,Pair<Integer, Integer> mousepos, boolean isInteractKey, SlideshowGUI holder) {
+    public void onClick(ServerPlayer player,Pair<Integer, Integer> mousepos, boolean isInteractKey, SlideshowGUI holder) {
         if (onClickCallback != null) {
             onClickCallback.call(player, mousepos, isInteractKey, holder);
         }

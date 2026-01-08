@@ -11,34 +11,34 @@ import net.andrews.sooncmp.Utils;
 import net.andrews.sooncmp.mapgui.gui.GuideMenuGUI;
 import net.andrews.sooncmp.slideshow.gui.MainMenuGUI;
 import net.andrews.sooncmp.slideshow.gui.MapGuiBase;
-import net.minecraft.component.type.MapIdComponent;
-import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
-import net.minecraft.network.packet.s2c.play.UpdateSelectedSlotS2CPacket;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Direction.Axis;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
+import net.minecraft.network.protocol.game.ClientboundSetHeldSlotPacket;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Direction.Axis;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.saveddata.maps.MapId;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 
 public class SlideshowGUI {
-    private HashSet<ServerPlayerEntity> players = new HashSet<>();
+    private HashSet<ServerPlayer> players = new HashSet<>();
     private ArrayList<MapGuiMap> maps = new ArrayList<>();
     private HashMap<Integer, ScrollCache> slot_storage = new HashMap<>();
 
     private BlockPos panelOpenPos;
     private Direction panelFacingSide;
-    private ServerWorld panelWorld;
+    private ServerLevel panelWorld;
 
-    private Box panelBox;
-    private Box panelBoxMirror;
+    private AABB panelBox;
+    private AABB panelBoxMirror;
 
     private int panelWidth;
     private int panelHeight;
@@ -56,26 +56,26 @@ public class SlideshowGUI {
 
     private static int PREFIX = 2000000000;
 
-    public SlideshowGUI(ServerWorld world, BlockPos openPos, Direction side, int width, int height) {
+    public SlideshowGUI(ServerLevel world, BlockPos openPos, Direction side, int width, int height) {
         openPanel(world, openPos, side, width, height);
         openGui(new MainMenuGUI());
     }
 
     public SlideshowGUI(MinecraftServer server, SlideshowConfig config) {
-        Identifier identifier = Identifier.of(config.dimension);
-        RegistryKey<World> registryKey = RegistryKey.of(RegistryKeys.WORLD, identifier);
-        ServerWorld world = server.getWorld(registryKey);
+        ResourceLocation identifier = ResourceLocation.parse(config.dimension);
+        ResourceKey<Level> registryKey = ResourceKey.create(Registries.DIMENSION, identifier);
+        ServerLevel world = server.getLevel(registryKey);
         BlockPos pos = new BlockPos(config.x, config.y, config.z);
         openPanel(world, pos, Direction.byName(config.direction), config.width, config.height);
         openGui(new MainMenuGUI());
     }
 
     public SlideshowConfig getConfig() {
-        return new SlideshowConfig(panelWorld.getRegistryKey().getValue().getPath(), panelOpenPos.getX(),
+        return new SlideshowConfig(panelWorld.dimension().location().getPath(), panelOpenPos.getX(),
                 panelOpenPos.getY(), panelOpenPos.getZ(), panelWidth, panelHeight, panelFacingSide.getName());
     }
 
-    public ServerWorld getPanelWorld() {
+    public ServerLevel getPanelWorld() {
         return panelWorld;
     }
 
@@ -87,7 +87,7 @@ public class SlideshowGUI {
         return panelFacingSide;
     }
 
-    public void addPlayer(ServerPlayerEntity player) {
+    public void addPlayer(ServerPlayer player) {
         if (!players.contains(player)) {
             players.add(player);
             slot_storage.put(player.getId(), new ScrollCache());
@@ -98,7 +98,7 @@ public class SlideshowGUI {
         }
     }
 
-    public void removePlayer(ServerPlayerEntity player) {
+    public void removePlayer(ServerPlayer player) {
         if (players.contains(player)) {
             removePanelFromPlayer(player);
             players.remove(player);
@@ -131,8 +131,8 @@ public class SlideshowGUI {
         return panelPixelHeight;
     }
 
-    public boolean isPlayerFacingFront(ServerPlayerEntity player) {
-        BlockPos playerPos = player.getBlockPos();
+    public boolean isPlayerFacingFront(ServerPlayer player) {
+        BlockPos playerPos = player.blockPosition();
         BlockPos panelPos = this.panelOpenPos;
         Direction facing = this.panelFacingSide;
 
@@ -153,16 +153,16 @@ public class SlideshowGUI {
         return true;
     }
 
-    public Pair<Integer, Integer> getMousePosForPlayer(ServerPlayerEntity player) {
+    public Pair<Integer, Integer> getMousePosForPlayer(ServerPlayer player) {
         if (isPlayerFacingFront(player)) {
-            BlockHitResult result = Utils.raycastBox(player.getWorld(), player, 30, panelBox);
-            if (result == null || result.getSide() != panelFacingSide) {
+            BlockHitResult result = Utils.raycastBox(player.level(), player, 30, panelBox);
+            if (result == null || result.getDirection() != panelFacingSide) {
                 return null;
             }
 
-            double dx = panelCorner1.getX() - result.getPos().getX();
-            double dy = panelCorner1.getY() - result.getPos().getY() + 1;
-            double dz = panelCorner1.getZ() - result.getPos().getZ();
+            double dx = panelCorner1.getX() - result.getLocation().x();
+            double dy = panelCorner1.getY() - result.getLocation().y() + 1;
+            double dz = panelCorner1.getZ() - result.getLocation().z();
 
             if (panelFacingSide != Direction.NORTH) {
                 dx = -dx;
@@ -179,14 +179,14 @@ public class SlideshowGUI {
             int newMouseY = (int) (dy * MapGuiMap.MAP_HEIGHT);
             return new Pair<>(newMouseX, newMouseY);
         } else {
-            BlockHitResult result2 = Utils.raycastBox(player.getWorld(), player, 30,
+            BlockHitResult result2 = Utils.raycastBox(player.level(), player, 30,
                     panelBoxMirror);
-            if (result2 == null || result2.getSide() != panelFacingSide.getOpposite()) {
+            if (result2 == null || result2.getDirection() != panelFacingSide.getOpposite()) {
                 return null;
             }
-            double dx = mirrorPanelCorner1.getX() - result2.getPos().getX();
-            double dy = mirrorPanelCorner2.getY() - result2.getPos().getY() + 1;
-            double dz = mirrorPanelCorner1.getZ() - result2.getPos().getZ();
+            double dx = mirrorPanelCorner1.getX() - result2.getLocation().x();
+            double dy = mirrorPanelCorner2.getY() - result2.getLocation().y() + 1;
+            double dz = mirrorPanelCorner1.getZ() - result2.getLocation().z();
 
             if (panelFacingSide.getOpposite() != Direction.NORTH) {
                 dx = -dx;
@@ -245,7 +245,7 @@ public class SlideshowGUI {
         this.mapGui.onMousePosChange(this, old_positions_looking_at, positions_looking_at);
     }
 
-    public void onInteractClick(ServerPlayerEntity player) {
+    public void onInteractClick(ServerPlayer player) {
         if (this.mapGui == null)
             return;
         Pair<Integer, Integer> mousePos = getMousePosForPlayer(player);
@@ -254,7 +254,7 @@ public class SlideshowGUI {
         this.mapGui.onClick(player, mousePos, true, this);
     }
 
-    public void onSwingClick(ServerPlayerEntity player) {
+    public void onSwingClick(ServerPlayer player) {
         if (this.mapGui == null)
             return;
         Pair<Integer, Integer> mousePos = getMousePosForPlayer(player);
@@ -313,7 +313,7 @@ public class SlideshowGUI {
 
     }
 
-    public void openPanel(ServerWorld world, BlockPos openPos, Direction side, int width, int height) {
+    public void openPanel(ServerLevel world, BlockPos openPos, Direction side, int width, int height) {
 
         if (this.mapGui != null) {
             this.mapGui.setReRenderFlag(true);
@@ -337,7 +337,7 @@ public class SlideshowGUI {
             offsetZ = side != Direction.EAST ? (0) : (width - 1);
         }
         panelCorner1 = new BlockPos(offsetX + openPos.getX(), openPos.getY() + height - 1, offsetZ + openPos.getZ())
-                .offset(side.getOpposite(), 1);
+                .relative(side.getOpposite(), 1);
 
         offsetX = 0;
         offsetZ = 0;
@@ -347,10 +347,10 @@ public class SlideshowGUI {
             offsetZ = side != Direction.EAST ? (width - 1) : 0;
         }
         panelCorner2 = new BlockPos(offsetX + openPos.getX(), openPos.getY(), offsetZ + openPos.getZ())
-                .offset(side.getOpposite(), 1);
+                .relative(side.getOpposite(), 1);
 
-        mirrorPanelCorner1 = panelCorner2.offset(side, 1);
-        mirrorPanelCorner2 = panelCorner1.offset(side, 1);
+        mirrorPanelCorner1 = panelCorner2.relative(side, 1);
+        mirrorPanelCorner2 = panelCorner1.relative(side, 1);
 
         this.panelBox = Utils.createEnclosingAABB(panelCorner1, panelCorner2);
         this.panelBoxMirror = Utils.createEnclosingAABB(mirrorPanelCorner1, mirrorPanelCorner2);
@@ -376,9 +376,9 @@ public class SlideshowGUI {
                 }
                 BlockPos posMirrored = (new BlockPos(offsetX + openPos.getX(), openPos.getY() + y,
                         offsetZ + openPos.getZ()))
-                        .offset(side.getOpposite(), 1);
+                        .relative(side.getOpposite(), 1);
 
-                MapGuiMap map = new MapGuiMap(new MapIdComponent(PREFIX++), this.panelWorld, pos, posMirrored, side);
+                MapGuiMap map = new MapGuiMap(new MapId(PREFIX++), this.panelWorld, pos, posMirrored, side);
                 maps.add(map);
             }
         }
@@ -390,17 +390,17 @@ public class SlideshowGUI {
         forceSend();
     }
 
-    void removePanelFromPlayer(ServerPlayerEntity player) {
+    void removePanelFromPlayer(ServerPlayer player) {
         int i = Math.min(this.panelSize, Integer.MAX_VALUE);
         int[] is = new int[i * 2];
         for (int j = 0; j < i; j++) {
             is[j * 2] = maps.get(j).getFrameIDS().getFirst();
             is[j * 2 + 1] = maps.get(j).getFrameIDS().getSecond();
         }
-        Utils.sendPacket(player, new EntitiesDestroyS2CPacket(is));
+        Utils.sendPacket(player, new ClientboundRemoveEntitiesPacket(is));
     }
 
-    public boolean onUpdateSelectedSlot(ServerPlayNetworkHandler serverPlayNetworkHandler, int selectedSlot) {
+    public boolean onUpdateSelectedSlot(ServerGamePacketListenerImpl serverPlayNetworkHandler, int selectedSlot) {
         Pair<Integer, Integer> mousePos = getMousePosForPlayer(serverPlayNetworkHandler.player);
         ScrollCache scrollCache = slot_storage.get(serverPlayNetworkHandler.player.getId());
 
@@ -411,7 +411,7 @@ public class SlideshowGUI {
         }
 
         if (scrollCache.lockedSlot != -1 && selectedSlot != scrollCache.lockedSlot) {
-            serverPlayNetworkHandler.sendPacket(new UpdateSelectedSlotS2CPacket(scrollCache.lockedSlot));
+            serverPlayNetworkHandler.send(new ClientboundSetHeldSlotPacket(scrollCache.lockedSlot));
         }
 
         if (scrollCache.lockedSlot != -1 && scrollCache.scrolled <= 0) {

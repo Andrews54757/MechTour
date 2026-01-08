@@ -1,17 +1,17 @@
 package net.andrews.sooncmp;
 
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.phys.Vec3;
 
 public class PlayerInfo {
-    public ServerPlayerEntity player;
+    public ServerPlayer player;
     public int teleportCooldown = 0;
     public int teleportTimeout = 0;
     public int clickCooldown = 0;
-    public ServerWorld world;
-    public Vec3d pos;
-    public PlayerInfo(ServerPlayerEntity player) {
+    public ServerLevel world;
+    public Vec3 pos;
+    public PlayerInfo(ServerPlayer player) {
         this.player = player;
     }
 }

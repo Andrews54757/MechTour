@@ -7,7 +7,7 @@ import com.mojang.datafixers.util.Pair;
 import net.andrews.sooncmp.mapgui.color.MapColors;
 import net.andrews.sooncmp.mapgui.gui.Resources;
 import net.andrews.sooncmp.slideshow.SlideshowGUI;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import net.andrews.sooncmp.slideshow.MapRenderer;
 
 public class MainMenuGUI extends MapGuiBase {
@@ -21,7 +21,7 @@ public class MainMenuGUI extends MapGuiBase {
         startSlideshow = new SimpleIconButton(Resources.slideshow_icon, (byte)(MapColors.SNOW + MapColors.BASE_COLOR), (byte)(MapColors.SNOW + MapColors.DARKER_COLOR));
        
 
-        startSlideshow.setClickCallback((ServerPlayerEntity player, Pair<Integer, Integer> mousepos, boolean isInteract, SlideshowGUI holder) -> {
+        startSlideshow.setClickCallback((ServerPlayer player, Pair<Integer, Integer> mousepos, boolean isInteract, SlideshowGUI holder) -> {
             holder.openGui(new SlideshowMenuGui());
         });
 

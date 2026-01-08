@@ -12,7 +12,7 @@ import net.minecraft.server.MinecraftServer;
 
 @Mixin(MinecraftServer.class)
 public class MixinMinecraftServer {
-    @Inject(method = "tick", at = @At("HEAD"))
+    @Inject(method = "tickServer", at = @At("HEAD"))
     private void onBeforeTick(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
 
         SoonCMPMod.onBeforeTick((MinecraftServer) (Object) this);

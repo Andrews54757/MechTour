@@ -6,7 +6,7 @@ import java.util.List;
 
 import net.andrews.sooncmp.mapgui.gui.Resources;
 import net.andrews.sooncmp.slideshow.SlideshowGUI;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import com.mojang.datafixers.util.Pair;
 
 public class ScrollBar extends InteractableElement {
@@ -34,10 +34,10 @@ public class ScrollBar extends InteractableElement {
         addInteractableElement(scrollDownButton);
 
 
-        scrollUpButton.setClickCallback((ServerPlayerEntity player, Pair<Integer, Integer> mousepos, boolean i, SlideshowGUI holder) -> {
+        scrollUpButton.setClickCallback((ServerPlayer player, Pair<Integer, Integer> mousepos, boolean i, SlideshowGUI holder) -> {
             decrementPage();
         });
-        scrollDownButton.setClickCallback((ServerPlayerEntity player, Pair<Integer, Integer> mousepos, boolean i, SlideshowGUI holder) -> {
+        scrollDownButton.setClickCallback((ServerPlayer player, Pair<Integer, Integer> mousepos, boolean i, SlideshowGUI holder) -> {
             incrementPage();
         });
 
@@ -167,7 +167,7 @@ public class ScrollBar extends InteractableElement {
     }
 
     @Override
-    public void onClick(ServerPlayerEntity player, Pair<Integer, Integer> mousepos, boolean isInteractKey, SlideshowGUI holder) {
+    public void onClick(ServerPlayer player, Pair<Integer, Integer> mousepos, boolean isInteractKey, SlideshowGUI holder) {
         int page = isMouseOver() ? getPageFromPos(mousepos.getSecond()) : -1;
         if (page != hoverPage) {
             this.setHoverPage(page);

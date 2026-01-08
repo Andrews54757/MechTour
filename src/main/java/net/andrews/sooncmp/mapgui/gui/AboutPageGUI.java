@@ -3,7 +3,7 @@ package net.andrews.sooncmp.mapgui.gui;
 import net.andrews.sooncmp.Configs;
 import net.andrews.sooncmp.mapgui.EphemeralMapGui;
 import net.andrews.sooncmp.mapgui.MapRenderer;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 
 public class AboutPageGUI extends MapGuiBase {
 
@@ -45,7 +45,7 @@ public class AboutPageGUI extends MapGuiBase {
 
         MapRenderer.drawText(holder, Resources.about_title,
                 holder.getPanelPixelWidth() / 2 - Resources.about_title.getWidth() / 2, 0,
-                holder.getPlayer().getWorld().getRegistryKey().equals(World.OVERWORLD)
+                holder.getPlayer().level().dimension().equals(Level.OVERWORLD)
                         ? ((byte) 116)
                         : ((byte) 58));
 

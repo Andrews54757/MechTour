@@ -7,8 +7,8 @@ import net.andrews.sooncmp.mapgui.MapRenderer;
 import net.andrews.sooncmp.mapgui.MapText;
 import net.andrews.sooncmp.waypoint.Waypoint;
 import net.andrews.sooncmp.waypoint.WaypointManager;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 import java.util.ArrayList;
 
 public class WaypointsMenuGui extends MapGuiBase {
@@ -94,7 +94,7 @@ public class WaypointsMenuGui extends MapGuiBase {
     @Override
     public void render(EphemeralMapGui holder) {
         if (currentDimensionTab == null)
-            setDimensionTab(DimensionTab.getDimensionTab(holder.getPlayer().getWorld()));
+            setDimensionTab(DimensionTab.getDimensionTab(holder.getPlayer().level()));
         MapRenderer.fill(holder, (byte) 0);
         // banner = new BitMapImage("banner.png").scaledDimensions(-1,
         // 100).setAlphaCutoff(200).bake();
@@ -113,7 +113,7 @@ public class WaypointsMenuGui extends MapGuiBase {
         closeButton.setDimensions(holder.getPanelPixelWidth() - 100 - 10, 10, 100, 50);
 
         WaypointManager manager = SoonCMPMod.waypointManager;
-        ArrayList<Waypoint> waypoints = manager.getWaypoints(currentDimensionTab.getKey().getValue().getPath());
+        ArrayList<Waypoint> waypoints = manager.getWaypoints(currentDimensionTab.getKey().location().getPath());
 
         int page = scrollBar.getDisplayPage();
 
@@ -161,7 +161,7 @@ public class WaypointsMenuGui extends MapGuiBase {
         }
 
         MapRenderer.drawText(holder, titleText, holder.getPanelPixelWidth() / 2 - titleText.getWidth() / 2, 5,
-        holder.getPlayer().getWorld().getRegistryKey().equals(World.OVERWORLD)
+        holder.getPlayer().level().dimension().equals(Level.OVERWORLD)
         ? ((byte) 116)
         : ((byte) 58));
 
@@ -242,7 +242,7 @@ public class WaypointsMenuGui extends MapGuiBase {
         if (currentBox != -1) {
 
             WaypointManager manager = SoonCMPMod.waypointManager;
-            ArrayList<Waypoint> waypoints = manager.getWaypoints(currentDimensionTab.getKey().getValue().getPath());
+            ArrayList<Waypoint> waypoints = manager.getWaypoints(currentDimensionTab.getKey().location().getPath());
 
             int startIndex = scrollBar.getDisplayPage() * itemsPerPage;
             int index = currentBox + startIndex;
@@ -256,14 +256,14 @@ public class WaypointsMenuGui extends MapGuiBase {
     }
 
     public enum DimensionTab {
-        OVERWORLD(World.OVERWORLD, (byte) 76, 0), NETHER(World.NETHER, (byte) 114, 1),
-        END(World.END, (byte) 72, 2);
+        OVERWORLD(Level.OVERWORLD, (byte) 76, 0), NETHER(Level.NETHER, (byte) 114, 1),
+        END(Level.END, (byte) 72, 2);
 
         private byte color;
-        private RegistryKey<World> key;
+        private ResourceKey<Level> key;
         private int index;
 
-        private DimensionTab(RegistryKey<World> key, byte color, int index) {
+        private DimensionTab(ResourceKey<Level> key, byte color, int index) {
             this.key = key;
             this.color = color;
             this.index = index;
@@ -277,13 +277,13 @@ public class WaypointsMenuGui extends MapGuiBase {
             return index;
         }
 
-        public RegistryKey<World> getKey() {
+        public ResourceKey<Level> getKey() {
             return key;
         }
 
-        public static DimensionTab getDimensionTab(World world) {
+        public static DimensionTab getDimensionTab(Level world) {
             for (DimensionTab tab : DimensionTab.values()) {
-                if (tab.getKey() == world.getRegistryKey()) {
+                if (tab.getKey() == world.dimension()) {
                     return tab;
                 }
             }

@@ -4,28 +4,28 @@ import java.util.ArrayList;
 
 import net.andrews.sooncmp.Utils;
 import net.andrews.sooncmp.mapgui.gui.MapGuiBase;
-import net.minecraft.component.type.MapIdComponent;
-import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
-import net.minecraft.network.packet.s2c.play.UpdateSelectedSlotS2CPacket;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Direction.Axis;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Direction.Axis;
+import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
+import net.minecraft.network.protocol.game.ClientboundSetHeldSlotPacket;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.level.saveddata.maps.MapId;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 
 public class EphemeralMapGui {
-    private ServerPlayerEntity player;
+    private ServerPlayer player;
     private ArrayList<MapGuiMap> maps = new ArrayList<>();
     private boolean panelOpen;
 
     private BlockPos panelOpenPos;
     private Direction panelFacingSide;
-    private ServerWorld panelWorld;
+    private ServerLevel panelWorld;
 
-    private Box panelBox;
+    private AABB panelBox;
 
     private int panelWidth;
     private int panelHeight;
@@ -45,7 +45,7 @@ public class EphemeralMapGui {
 
     private static int PREFIX = 1000000000;
 
-    public EphemeralMapGui(ServerPlayerEntity player) {
+    public EphemeralMapGui(ServerPlayer player) {
         this.player = player;
         this.panelOpen = false;
 
@@ -84,10 +84,10 @@ public class EphemeralMapGui {
         if (!player.isAlive())
             return true;
 
-        if (panelWorld != player.getWorld())
+        if (panelWorld != player.level())
             return true;
 
-        if (!player.getBlockPos().isWithinDistance(panelOpenPos, 10))
+        if (!player.blockPosition().closerThan(panelOpenPos, 10))
             return true;
 
         return false;
@@ -107,15 +107,15 @@ public class EphemeralMapGui {
                 this.mapGui.render(this);
                 this.mapGui.setReRenderFlag(false);
             }
-            BlockHitResult result = Utils.raycastBox(player.getWorld(), player, 20, panelBox);
+            BlockHitResult result = Utils.raycastBox(player.level(), player, 20, panelBox);
 
             int newMouseX = -1;
             int newMouseY = -1;
-            if (result != null && result.getSide() == panelFacingSide) {
+            if (result != null && result.getDirection() == panelFacingSide) {
 
-                double dx = panelCorner1.getX() - result.getPos().getX();
-                double dy = panelCorner1.getY() - result.getPos().getY() + 1;
-                double dz = panelCorner1.getZ() - result.getPos().getZ();
+                double dx = panelCorner1.getX() - result.getLocation().x();
+                double dy = panelCorner1.getY() - result.getLocation().y() + 1;
+                double dz = panelCorner1.getZ() - result.getLocation().z();
 
                 // dx += 1;
                 // dz += 1;
@@ -237,7 +237,7 @@ public class EphemeralMapGui {
             this.mapGui.setReRenderFlag(true);
         }
         this.panelOpen = true;
-        this.panelWorld = this.player.getServerWorld();
+        this.panelWorld = this.player.serverLevel();
         this.panelOpenPos = openPos;
         this.panelFacingSide = side;
 
@@ -255,7 +255,7 @@ public class EphemeralMapGui {
             offsetZ = side != Direction.EAST ? (-width / 2) : -(-width / 2);
         }
         panelCorner1 = new BlockPos(offsetX + openPos.getX(), openPos.getY() + height - 1, offsetZ + openPos.getZ())
-                .offset(side.getOpposite(), 1);
+                .relative(side.getOpposite(), 1);
 
         offsetX = 0;
         offsetZ = 0;
@@ -265,7 +265,7 @@ public class EphemeralMapGui {
             offsetZ = side != Direction.EAST ? (width - width / 2 - 1) : -(width - width / 2 - 1);
         }
         panelCorner2 = new BlockPos(offsetX + openPos.getX(), openPos.getY(), offsetZ + openPos.getZ())
-                .offset(side.getOpposite(), 1);
+                .relative(side.getOpposite(), 1);
         this.panelBox = Utils.createEnclosingAABB(panelCorner1, panelCorner2);
 
         int index = 0;
@@ -284,7 +284,7 @@ public class EphemeralMapGui {
 
                 MapGuiMap map;
                 if (index >= maps.size()) {
-                    map = new MapGuiMap(new MapIdComponent(PREFIX + index), this, player);
+                    map = new MapGuiMap(new MapId(PREFIX + index), this, player);
                     maps.add(map);
                 } else {
                     map = maps.get(index);
@@ -312,16 +312,16 @@ public class EphemeralMapGui {
         for (int j = 0; j < i; j++) {
             is[j] = maps.get(j).getEntityId();
         }
-        Utils.sendPacket(player, new EntitiesDestroyS2CPacket(is));
+        Utils.sendPacket(player, new ClientboundRemoveEntitiesPacket(is));
         this.panelOpen = false;
         this.panelWorld = null;
     }
 
-    public ServerPlayerEntity getPlayer() {
+    public ServerPlayer getPlayer() {
         return player;
     }
 
-    public boolean onUpdateSelectedSlot(ServerPlayNetworkHandler serverPlayNetworkHandler, int selectedSlot) {
+    public boolean onUpdateSelectedSlot(ServerGamePacketListenerImpl serverPlayNetworkHandler, int selectedSlot) {
      
         if (!isTrackingPanel() || !isScrollable()) {
             lockedSlot = -1;
@@ -331,7 +331,7 @@ public class EphemeralMapGui {
         
        
         if (lockedSlot != -1 && scrolled <= 0) {
-            serverPlayNetworkHandler.sendPacket(new UpdateSelectedSlotS2CPacket(lockedSlot));
+            serverPlayNetworkHandler.send(new ClientboundSetHeldSlotPacket(lockedSlot));
             
             int prev = lockedSlot - 1;
             int after = lockedSlot + 1;

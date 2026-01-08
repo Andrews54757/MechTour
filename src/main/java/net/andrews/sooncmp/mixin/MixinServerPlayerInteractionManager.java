@@ -9,30 +9,30 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.andrews.sooncmp.SoonCMPMod;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.network.ServerPlayerInteractionManager;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerPlayerGameMode;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
-@Mixin(ServerPlayerInteractionManager.class)
+@Mixin(ServerPlayerGameMode.class)
 public class MixinServerPlayerInteractionManager {
     @Shadow @Final
-    private ServerPlayerEntity player;
+    private ServerPlayer player;
 
-    @Inject(method = "interactItem", at = @At("HEAD"), cancellable = true)
-    private void interactItemIntercept(ServerPlayerEntity player, World world, ItemStack stack, Hand hand, CallbackInfoReturnable<ActionResult> ci) {
-        if (hand == Hand.MAIN_HAND) {
+    @Inject(method = "useItem", at = @At("HEAD"), cancellable = true)
+    private void interactItemIntercept(ServerPlayer player, Level world, ItemStack stack, InteractionHand hand, CallbackInfoReturnable<InteractionResult> ci) {
+        if (hand == InteractionHand.MAIN_HAND) {
             SoonCMPMod.onInteractItem(player, ci);
         }
     }
 
-    @Inject(method = "processBlockBreakingAction", at = @At("HEAD"), cancellable = true)
-    private void interactBlockIntercept(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, int sequence, CallbackInfo ci) {
+    @Inject(method = "handleBlockBreakAction", at = @At("HEAD"), cancellable = true)
+    private void interactBlockIntercept(BlockPos pos, ServerboundPlayerActionPacket.Action action, Direction direction, int worldHeight, int sequence, CallbackInfo ci) {
         SoonCMPMod.onBlockBreak(player, ci);
     }
 }

@@ -6,21 +6,21 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.andrews.sooncmp.SoonCMPMod;
-import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
-import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
+import net.minecraft.network.protocol.game.ServerboundSwingPacket;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 
-@Mixin(ServerPlayNetworkHandler.class)
+@Mixin(ServerGamePacketListenerImpl.class)
 public class MixinServerPlayNetworkHandler {
     
-    @Inject(method = "onUpdateSelectedSlot",at = @At("RETURN"))
-    private void onUpdateSelectedSlotInject(UpdateSelectedSlotC2SPacket packet, CallbackInfo ci) {
+    @Inject(method = "handleSetCarriedItem",at = @At("RETURN"))
+    private void onUpdateSelectedSlotInject(ServerboundSetCarriedItemPacket packet, CallbackInfo ci) {
 
-        SoonCMPMod.onUpdateSelectedSlot((ServerPlayNetworkHandler) (Object) this, packet.getSelectedSlot());
+        SoonCMPMod.onUpdateSelectedSlot((ServerGamePacketListenerImpl) (Object) this, packet.getSlot());
     }
 
-    @Inject(method = "onHandSwing", at = @At("RETURN"))
-    private void onHandSwingInject(HandSwingC2SPacket packet, CallbackInfo ci) {
-        SoonCMPMod.onSwingClick(((ServerPlayNetworkHandler) (Object)this).player);
+    @Inject(method = "handleAnimate", at = @At("RETURN"))
+    private void onHandSwingInject(ServerboundSwingPacket packet, CallbackInfo ci) {
+        SoonCMPMod.onSwingClick(((ServerGamePacketListenerImpl) (Object)this).player);
     }
 }

@@ -11,7 +11,7 @@ import net.andrews.sooncmp.mapgui.BitMapImage;
 import net.andrews.sooncmp.mapgui.color.MapColors;
 import net.andrews.sooncmp.mapgui.gui.Resources;
 import net.andrews.sooncmp.slideshow.SlideshowGUI;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import net.andrews.sooncmp.slideshow.MapRenderer;
 
 public class PresentationGui extends MapGuiBase {
@@ -32,7 +32,7 @@ public class PresentationGui extends MapGuiBase {
         this.presentation = presentation;
         backButton = new SimpleTextButton(Resources.back_text, nav_fillColor, nav_hoverColor, nav_fillTextColor,
                 nav_hoverTextColor);
-        backButton.setClickCallback((ServerPlayerEntity player, Pair<Integer, Integer> mousepos, boolean isInteract,
+        backButton.setClickCallback((ServerPlayer player, Pair<Integer, Integer> mousepos, boolean isInteract,
                 SlideshowGUI holder2) -> {
             holder.openGui(new SlideshowMenuGui());
         });
@@ -195,7 +195,7 @@ public class PresentationGui extends MapGuiBase {
     }
 
     @Override
-    public void onClick(ServerPlayerEntity player, Pair<Integer, Integer> mousepos, boolean isInteractKey,
+    public void onClick(ServerPlayer player, Pair<Integer, Integer> mousepos, boolean isInteractKey,
             SlideshowGUI holder) {
 
         if (backButton.isMouseOnElement(mousepos.getFirst(), mousepos.getSecond())) {

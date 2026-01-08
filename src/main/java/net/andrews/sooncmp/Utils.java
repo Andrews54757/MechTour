@@ -9,16 +9,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.entity.Entity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 
 public class Utils {
-    public static net.minecraft.util.math.Box createEnclosingAABB(BlockPos pos1, BlockPos pos2) {
+    public static net.minecraft.world.phys.AABB createEnclosingAABB(BlockPos pos1, BlockPos pos2) {
         int minX = Math.min(pos1.getX(), pos2.getX());
         int minY = Math.min(pos1.getY(), pos2.getY());
         int minZ = Math.min(pos1.getZ(), pos2.getZ());
@@ -29,29 +29,29 @@ public class Utils {
         return createAABB(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
-    public static net.minecraft.util.math.Box createAABB(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
-        return new net.minecraft.util.math.Box(minX, minY, minZ, maxX, maxY, maxZ);
+    public static net.minecraft.world.phys.AABB createAABB(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+        return new net.minecraft.world.phys.AABB(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
-    public static BlockHitResult raycastBox(World world, Entity entity, double range, Box box) {
-        Vec3d eyesPos = entity.getCameraPosVec(1f);
-        Vec3d rangedLookRot = entity.getRotationVec(1f).multiply(range);
-        Vec3d lookEndPos = eyesPos.add(rangedLookRot);
+    public static BlockHitResult raycastBox(Level world, Entity entity, double range, AABB box) {
+        Vec3 eyesPos = entity.getEyePosition(1f);
+        Vec3 rangedLookRot = entity.getViewVector(1f).scale(range);
+        Vec3 lookEndPos = eyesPos.add(rangedLookRot);
 
-        ArrayList<Box> boxes = new ArrayList<>();
+        ArrayList<AABB> boxes = new ArrayList<>();
         boxes.add(box);
 
-        return Box.raycast(boxes, eyesPos, lookEndPos, new BlockPos(0, 0, 0));
+        return AABB.clip(boxes, eyesPos, lookEndPos, new BlockPos(0, 0, 0));
     }
 
     public static Path getConfigDir() {
         return FabricLoader.getInstance().getConfigDir();
     }
 
-    public static void sendPacket(ServerPlayerEntity player, net.minecraft.network.packet.Packet<?> packet) {
-        if (player.isDisconnected())
+    public static void sendPacket(ServerPlayer player, net.minecraft.network.protocol.Packet<?> packet) {
+        if (player.hasDisconnected())
             return;
-        player.networkHandler.sendPacket(packet);
+        player.connection.send(packet);
     }
 
     public static String readTextFile(Path path) {

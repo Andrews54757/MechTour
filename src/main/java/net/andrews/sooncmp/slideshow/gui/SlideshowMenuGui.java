@@ -11,10 +11,7 @@ import net.andrews.sooncmp.mapgui.color.MapColors;
 import net.andrews.sooncmp.mapgui.gui.Resources;
 import net.andrews.sooncmp.waypoint.Waypoint;
 import net.andrews.sooncmp.waypoint.WaypointManager;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.world.World;
-
+import net.minecraft.server.level.ServerPlayer;
 import java.awt.Font;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,7 +43,7 @@ public class SlideshowMenuGui extends MapGuiBase {
     public SlideshowMenuGui() {
         backButton = new SimpleTextButton(Resources.back_text, nav_fillColor, nav_hoverColor, nav_fillTextColor,
                 nav_hoverTextColor);
-        backButton.setClickCallback((ServerPlayerEntity player, Pair<Integer, Integer> mousepos, boolean isInteract,
+        backButton.setClickCallback((ServerPlayer player, Pair<Integer, Integer> mousepos, boolean isInteract,
                 SlideshowGUI holder) -> {
             holder.openGui(new MainMenuGUI());
         });
@@ -185,7 +182,7 @@ public class SlideshowMenuGui extends MapGuiBase {
     }
 
     @Override
-    public void onClick(ServerPlayerEntity player, Pair<Integer, Integer> mousepos, boolean isInteractKey,
+    public void onClick(ServerPlayer player, Pair<Integer, Integer> mousepos, boolean isInteractKey,
             SlideshowGUI holder) {
         int index = getItemFromPos(holder, mousepos.getFirst(), mousepos.getSecond());
         String presentation = getPresentation(index);
